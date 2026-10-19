@@ -1,0 +1,2518 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100 dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arsal's Game Verse - Instant Retro Arcade Portal</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+darkMode: 'class',
+theme: {
+extend: {
+colors: {
+brand: {
+purple: '#8b5cf6',
+pink: '#ec4899',
+cyan: '#06b6d4',
+amber: '#f59e0b',
+emerald: '#10b981',
+dark: '#090d16'
+}
+},
+fontFamily: {
+sans: ['Outfit', 'sans-serif'],
+pixel: ['"Press Start 2P"', 'cursive']
+}
+}
+}
+}
+</script>
+<!-- FontAwesome Icons & Google Fonts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+.font-pixel { font-family: 'Press Start 2P', cursive; }
+    .game-art svg { width: 100%; height: 100%; display: block; transition: transform .35s ease; }
+    .poki-card:hover .game-art svg { transform: scale(1.09); }
+    .art-scanlines {
+      pointer-events: none;
+      background: repeating-linear-gradient(to bottom, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 1px, transparent 1px, transparent 3px);
+      opacity: .55;
+    }
+    /* pixel grid over each thumbnail */
+    .art-grid {
+      pointer-events: none;
+      background-image:
+        linear-gradient(to right, rgba(139,92,246,0.18) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(139,92,246,0.18) 1px, transparent 1px);
+      background-size: 10px 10px;
+      mix-blend-mode: screen;
+    }
+    /* animated neon grid backdrop for the whole page */
+    #gridBackdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 80% 55% at 50% 0%, rgba(139,92,246,0.16), transparent 70%),
+        radial-gradient(ellipse 70% 50% at 50% 100%, rgba(6,182,212,0.12), transparent 70%);
+    }
+    #gridBackdrop::before {
+      content: "";
+      position: absolute;
+      left: -50%;
+      right: -50%;
+      bottom: -20%;
+      height: 120%;
+      background-image:
+        linear-gradient(to right, rgba(99,102,241,0.30) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(99,102,241,0.30) 1px, transparent 1px);
+      background-size: 44px 44px;
+      transform: perspective(380px) rotateX(66deg);
+      transform-origin: 50% 100%;
+      animation: gridScroll 3.4s linear infinite;
+      mask-image: linear-gradient(to top, #000 10%, transparent 85%);
+      -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 85%);
+    }
+    #gridBackdrop::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(148,163,184,0.07) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148,163,184,0.07) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 20%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 20%, transparent 80%);
+    }
+    @keyframes gridScroll { to { background-position: 0 44px; } }
+    @media (prefers-reduced-motion: reduce) { #gridBackdrop::before { animation: none; } }
+    body > header, body > main, body > footer, #gameLauncherModal { position: relative; z-index: 1; }
+    /* ---- ad slots ---- */
+    .ad-frame {
+      position: relative;
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(148,163,184,0.14);
+      border-radius: 1rem;
+      padding: 1.25rem 0.75rem 0.75rem;
+      overflow: hidden;
+    }
+    .ad-label {
+      position: absolute; top: 6px; left: 10px;
+      font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+      font-weight: 800; color: #64748b;
+    }
+    .ad-placeholder {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: .4rem; width: 100%;
+      border: 1px dashed rgba(148,163,184,0.28); border-radius: .75rem;
+      color: #475569; font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      background: repeating-linear-gradient(45deg, rgba(148,163,184,0.04) 0 10px, transparent 10px 20px);
+    }
+    .ad-placeholder i { font-size: 18px; }
+.font-sans { font-family: 'Outfit', sans-serif; }
+
+.glass-panel {
+background: rgba(15, 23, 42, 0.85);
+backdrop-filter: blur(16px);
+border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.glow-purple { filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.4)); }
+
+.poki-card {
+transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.poki-card:hover {
+transform: translateY(-8px) scale(1.02);
+box-shadow: 0 20px 30px -10px rgba(139, 92, 246, 0.25);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #090d16; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #334155; }
+</style>
+<!-- GOOGLE ADSENSE LOADER (replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID) -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+</head>
+<body class="h-full font-sans bg-brand-dark text-slate-100 flex flex-col antialiased overflow-x-hidden selection:bg-purple-500 selection:text-white">
+
+<!-- ANIMATED NEON GRID BACKDROP -->
+<div id="gridBackdrop" aria-hidden="true"></div>
+
+<!-- TIMED INTERSTITIAL AD -->
+<div id="adInterstitial" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md items-center justify-center p-4">
+<div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4">
+<div class="flex items-center justify-between border-b border-slate-800 pb-3">
+<span class="font-pixel text-[9px] text-slate-500 tracking-widest">ADVERTISEMENT</span>
+<span class="text-[10px] text-slate-500 font-bold">Game is paused</span>
+</div>
+<div id="adInterstitialBody" class="min-h-[280px] flex items-center justify-center"></div>
+<button id="adInterstitialClose" onclick="closeInterstitial()" class="w-full font-pixel text-[10px] px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-95 transition">
+CLOSE IN 5
+</button>
+</div>
+</div>
+
+
+<!-- HEADER NAVIGATION BAR -->
+<header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-4 lg:px-8 py-3">
+<div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+
+<!-- Logo -->
+<div onclick="resetToHome()" class="flex items-center gap-3 cursor-pointer group">
+<div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-500 to-cyan-400 p-0.5 shadow-lg shadow-purple-500/20 group-hover:rotate-6 transition-transform">
+<div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
+<i class="fa-solid fa-gamepad text-2xl bg-gradient-to-tr from-purple-400 to-pink-400 bg-clip-text text-transparent"></i>
+</div>
+</div>
+<div>
+<span class="text-xl font-black tracking-wider bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent font-pixel">
+ARSAL'S<span class="text-xs text-purple-400 ml-1 font-sans font-bold">GAME VERSE</span>
+</span>
+<p class="text-[10px] text-slate-400 font-semibold tracking-wide uppercase -mt-1 hidden sm:block">14 Instant Retro Arcade Games</p>
+</div>
+</div>
+
+<!-- Search Bar -->
+<div class="flex-1 max-w-md relative hidden sm:block">
+<i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+<input id="searchInput" type="text" oninput="handleSearch(this.value)" placeholder="Search 14 games (e.g. Pacman, Tetris, Snake, Galaga, Dino)..."
+class="w-full bg-slate-900/90 border border-slate-800 focus:border-purple-500 rounded-full py-2 pl-11 pr-4 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all">
+</div>
+
+<!-- Header Actions -->
+<div class="flex items-center gap-3">
+<button id="soundToggleBtn" onclick="toggleAudio()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-bold flex items-center gap-2 transition active:scale-95 shadow-sm">
+<i id="soundIcon" class="fa-solid fa-volume-high text-cyan-400"></i>
+<span id="soundText" class="hidden md:inline">SFX ON</span>
+</button>
+
+<button onclick="filterFavorites()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-pink-400 text-xs font-bold flex items-center gap-2 transition active:scale-95 shadow-sm">
+<i class="fa-solid fa-heart text-pink-500"></i>
+<span class="hidden md:inline">Favorites</span>
+<span id="favCountBadge" class="bg-pink-500/20 text-pink-300 px-1.5 py-0.5 rounded-md text-[10px]">0</span>
+</button>
+</div>
+</div>
+
+<!-- Mobile Search -->
+<div class="mt-3 sm:hidden relative">
+<i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+<input id="mobileSearchInput" type="text" oninput="handleSearch(this.value)" placeholder="Search games..."
+class="w-full bg-slate-900 border border-slate-800 rounded-full py-2 pl-11 pr-4 text-sm text-slate-200 placeholder-slate-500 focus:outline-none">
+</div>
+</header>
+
+<!-- MAIN PORTAL CONTAINER -->
+<main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 flex flex-col gap-6">
+
+<!-- DASHBOARD VIEW -->
+<section id="portalDashboard" class="flex flex-col gap-6">
+
+<!-- Hero Banner -->
+<div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-purple-900/40 via-slate-900 to-pink-900/30 border border-purple-500/20 p-6 md:p-10 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="space-y-3 z-10 text-center md:text-left max-w-xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold">
+<i class="fa-solid fa-bolt text-amber-400"></i> Instant Browser Play - 14 Games Unlocked
+</div>
+<h1 class="text-3xl md:text-5xl font-black tracking-tight text-white">
+WELCOME TO <span class="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">ARSAL'S GAME VERSE</span>
+</h1>
+<p class="text-slate-400 text-sm md:text-base">
+Play 14 classic retro arcade games instantly! Pacman, Tetris, Galaga, Crossy Road, Dino Run, Snake, Pong, & more with high scores, SFX, and smooth controls.
+</p>
+</div>
+
+<div class="z-10 flex items-center justify-center">
+<button onclick="launchRandomGame()" class="group relative px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-sm md:text-base shadow-xl shadow-purple-500/25 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-3">
+<i class="fa-solid fa-shuffle text-amber-300 text-lg group-hover:rotate-180 transition-transform duration-500"></i>
+RANDOM GAME
+</button>
+</div>
+</div>
+
+<!-- Category Pills & Sort -->
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3">
+<div id="categoryPills" class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0"></div>
+
+<div class="flex items-center gap-3 w-full md:w-auto justify-end border-t md:border-t-0 border-slate-800 pt-2 md:pt-0">
+<span class="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+<i class="fa-solid fa-arrow-down-short-wide text-purple-400"></i> Sort:
+</span>
+<select id="sortSelect" onchange="handleSortChange(this.value)" class="bg-slate-950 border border-slate-800 text-slate-200 text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-purple-500">
+<option value="popular">Popularity</option>
+<option value="rating">Top Rated</option>
+<option value="title">Alphabetical</option>
+</select>
+</div>
+</div>
+
+<!-- Top Ad Slot -->
+<div id="adTop"></div>
+
+<!-- Games Grid -->
+<div id="gamesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full"></div>
+
+<!-- Empty State -->
+<div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-center space-y-4">
+<div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 text-2xl">
+<i class="fa-solid fa-ghost"></i>
+</div>
+<h3 class="text-lg font-bold text-slate-300">No Games Found</h3>
+<button onclick="resetFilters()" class="text-xs font-bold text-purple-400 hover:text-purple-300 underline">Reset Filters</button>
+</div>
+</section>
+
+<!-- GAME LAUNCHER MODAL VIEW -->
+<section id="gameLauncherModal" class="hidden flex-1 flex-col gap-4">
+
+<div class="flex items-center justify-between bg-slate-900 border border-slate-800/80 rounded-2xl px-5 py-3">
+<button onclick="closeGameModal()" class="flex items-center gap-2 text-slate-300 hover:text-white font-bold text-xs bg-slate-800 hover:bg-slate-700 px-3.5 py-2 rounded-xl transition">
+<i class="fa-solid fa-arrow-left"></i> Back to Portal
+</button>
+
+<div class="flex items-center gap-3">
+<button id="modalFavBtn" onclick="toggleModalFav()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-pink-500 transition text-sm">
+<i class="fa-solid fa-heart"></i>
+</button>
+<button onclick="toggleFullscreen()" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-purple-600/20 transition">
+<i class="fa-solid fa-expand"></i> <span class="hidden sm:inline">Fullscreen</span>
+</button>
+</div>
+</div>
+
+<!-- Main Interactive Game View -->
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1">
+
+<div id="gameViewportContainer" class="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden p-4 md:p-6 flex flex-col justify-between shadow-2xl relative min-h-[480px]">
+
+<!-- Stats Bar -->
+<div class="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
+<div class="flex items-center gap-3">
+<span id="activeGameBadge" class="px-2.5 py-1 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[10px] font-black uppercase">ACTION</span>
+<h2 id="activeGameTitle" class="font-pixel text-xs md:text-sm text-white">GAME TITLE</h2>
+</div>
+<div class="flex items-center gap-6 font-pixel text-xs">
+<div class="text-slate-400">SCORE: <span id="activeScore" class="text-cyan-400">0</span></div>
+<div class="text-slate-400">BEST: <span id="activeHighScore" class="text-amber-400">0</span></div>
+</div>
+</div>
+
+<!-- Canvas Play Area -->
+<div id="activePlayArea" class="relative flex-1 bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center min-h-[360px] cursor-pointer">
+
+<canvas id="activeCanvas" class="w-full h-full block border-none"></canvas>
+<div id="activeDomGrid" class="hidden w-full h-full p-4 grid grid-cols-4 gap-3"></div>
+
+<!-- Game Overlay -->
+<div id="gameOverlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+<h3 id="overlayHeader" class="font-pixel text-xl md:text-3xl text-purple-400 mb-2 glow-purple">READY PLAYER ONE</h3>
+<p id="overlaySubtext" class="text-slate-400 text-xs md:text-sm mb-6 max-w-xs">Press start button or spacebar to launch!</p>
+<button id="overlayActionBtn" onclick="triggerActiveGameStart()" class="font-pixel text-xs bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-8 py-4 rounded-2xl shadow-xl shadow-purple-600/30 transition transform hover:scale-105 active:scale-95">
+START GAME
+</button>
+</div>
+</div>
+
+<!-- Dynamic Touch Controls -->
+<div id="activeTouchControls" class="mt-4 pt-3 border-t border-slate-800/80 flex justify-center gap-3"></div>
+</div>
+
+<!-- Game Details Sidebar -->
+<div class="space-y-6">
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
+<div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+<div id="activeIconContainer" class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 text-xl">
+<i class="fa-solid fa-gamepad"></i>
+</div>
+<div>
+<h3 id="sidebarGameName" class="font-bold text-sm text-white">Game Title</h3>
+<div class="flex items-center gap-1 text-amber-400 text-xs">
+<i class="fa-solid fa-star"></i>
+<span id="sidebarRating" class="font-bold text-slate-200">4.8</span>
+</div>
+</div>
+</div>
+
+<div>
+<h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Description</h4>
+<p id="sidebarDesc" class="text-xs text-slate-300 leading-relaxed">Game description...</p>
+</div>
+
+<div>
+<h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">How To Play</h4>
+<p id="sidebarControls" class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">Controls...</p>
+</div>
+
+<div class="pt-2 border-t border-slate-800 text-[11px] text-slate-500 flex justify-between">
+<span>Category: <strong id="sidebarCategory" class="text-slate-300">Arcade</strong></span>
+<span>Mode: <strong id="sidebarMode" class="text-slate-300">Single Player</strong></span>
+</div>
+</div>
+
+<!-- Sidebar Ad Slot -->
+<div id="adSidebar"></div>
+</div>
+
+</div>
+</section>
+
+<!-- Footer Ad Slot -->
+<div id="adFooter" class="max-w-7xl w-full mx-auto px-4 lg:px-8 pb-6"></div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="mt-auto border-t border-slate-900 bg-slate-950 py-6 px-4 text-center text-xs text-slate-500">
+<div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<i class="fa-solid fa-gamepad text-purple-500"></i>
+<span class="font-bold text-slate-400">Arsal's Game Verse</span> — 14 Instant HTML5 Browser Games
+</div>
+<p>© 2026 Arsal's Game Verse • Web Audio Synthesizer & Canvas Arcade</p>
+</div>
+</footer>
+
+<!-- JAVASCRIPT GAME ENGINE -->
+<script>
+const GAMES_DATABASE = [
+{
+id: 'pacrunner',
+title: 'Cyber Pac-Runner',
+category: 'Arcade',
+tags: ['Hot', 'Pacman', 'Retro'],
+rating: 5.0,
+plays: '210K',
+color: 'amber',
+gradient: 'from-amber-400 to-yellow-600',
+icon: 'fa-ghost',
+description: 'Guide Cyber-Pac through the neon maze! Eat dots, power-pellets, and hunt glitchy ghosts when powered up.',
+controls: 'Desktop: Arrow Keys or WASD to navigate maze corridors.\nMobile: Touch direction controls.',
+mode: 'Single Player'
+},
+{
+id: 'galaga',
+title: 'Neon Galaga 3000',
+category: 'Action',
+tags: ['Shooter', 'Hot', 'Retro'],
+rating: 4.9,
+plays: '195K',
+color: 'purple',
+gradient: 'from-purple-600 to-indigo-800',
+icon: 'fa-jet-fighter-up',
+description: 'Classic arcade space shooter! Blast diving alien bug squadrons, dodge plasma bombs, and rack up combos.',
+controls: 'Desktop: Left / Right Arrows to move, Spacebar or Up Arrow to fire laser cannons.',
+mode: 'Single Player'
+},
+{
+id: 'tetris',
+title: 'Laser Tetris DX',
+category: 'Puzzle',
+tags: ['Puzzle', 'Retro', 'Strategy'],
+rating: 4.9,
+plays: '230K',
+color: 'cyan',
+gradient: 'from-cyan-500 to-blue-700',
+icon: 'fa-cubes',
+description: 'Position and rotate falling neon tetromino blocks! Clear full horizontal lines to gain massive point multipliers.',
+controls: 'Desktop: Left/Right Arrows to slide, Up Arrow to rotate block, Down Arrow to hard drop.',
+mode: 'Single Player'
+},
+{
+id: 'crossyroad',
+title: 'Retro Crossy Road',
+category: 'Arcade',
+tags: ['New', 'Arcade', 'Action'],
+rating: 4.8,
+plays: '175K',
+color: 'emerald',
+gradient: 'from-emerald-500 to-teal-700',
+icon: 'fa-road',
+description: 'Hop across 3D isometric cyber-highways, fast train tracks, and floating river logs without getting squished!',
+controls: 'Desktop: Up Arrow / W to hop forward, Left/Right Arrows to dodge sideways.\nMobile: Touch buttons.',
+mode: 'Single Player'
+},
+{
+id: 'dinorun',
+title: 'Dino Cyber Run',
+category: 'Action',
+tags: ['New', 'Runner', 'Action'],
+rating: 4.7,
+plays: '160K',
+color: 'pink',
+gradient: 'from-pink-500 to-rose-700',
+icon: 'fa-dragon',
+description: 'Run through a cyber desert as T-Rex! Jump over cacti and laser traps while ducking under flying pterodactyls.',
+controls: 'Desktop: Up Arrow / Spacebar to jump, Down Arrow to duck.\nMobile: Tap top half to jump, bottom half to duck.',
+mode: 'Single Player'
+},
+{
+id: 'snake',
+title: 'Neon Snake 2077',
+category: 'Arcade',
+tags: ['Hot', 'Cyberpunk', 'Action'],
+rating: 4.9,
+plays: '158K',
+color: 'emerald',
+gradient: 'from-emerald-500 to-teal-700',
+icon: 'fa-staff-snake',
+description: 'Steer your glowing cyber snake! Collect power-orbs, unlock Speed Boosts, Multipliers, and Phase/Ghost mode while dodging walls.',
+controls: 'Desktop: Arrow Keys or WASD to steer.\nMobile: Touch control buttons.',
+mode: 'Single Player'
+},
+{
+id: 'flappy',
+title: 'Flappy Cyber-Bird',
+category: 'Action',
+tags: ['Trending', 'Retro', 'Action'],
+rating: 4.8,
+plays: '142K',
+color: 'purple',
+gradient: 'from-purple-500 to-indigo-700',
+icon: 'fa-crow',
+description: 'Guide your neon cyber-bird through high-voltage laser gates! Flap wings with precise timing to navigate obstacles.',
+controls: 'Desktop: Up Arrow, Spacebar, or Mouse Click anywhere to flap wings.\nMobile: Tap screen.',
+mode: 'Single Player'
+},
+{
+id: 'breakout',
+title: 'Neon Breakout DX',
+category: 'Arcade',
+tags: ['Hot', 'Arcade', 'Retro'],
+rating: 4.7,
+plays: '120K',
+color: 'pink',
+gradient: 'from-pink-500 to-rose-700',
+icon: 'fa-cubes-stacked',
+description: 'Shatter glowing cyber-bricks with plasma balls! Bounce off your energetic paddle and clear all rows of obstacles.',
+controls: 'Desktop: Left / Right Arrow Keys or A / D to move paddle.\nMobile: Touch buttons.',
+mode: 'Single Player'
+},
+{
+id: 'invaders',
+title: 'Space Invaders 2088',
+category: 'Action',
+tags: ['Shooter', 'Action', 'Retro'],
+rating: 4.9,
+plays: '180K',
+color: 'amber',
+gradient: 'from-amber-500 to-red-700',
+icon: 'fa-user-ninja',
+description: 'Defend Earth against alien squadrons! Move your ship, blast invader formations, and hide behind laser shields.',
+controls: 'Desktop: Left / Right Arrows to move, Up Arrow or Spacebar to fire lasers.',
+mode: 'Single Player'
+},
+{
+id: 'pong',
+title: 'Cyber Pong DX',
+category: '2 Player',
+tags: ['Hot', '2 Player', 'Arcade'],
+rating: 4.8,
+plays: '112K',
+color: 'cyan',
+gradient: 'from-cyan-500 to-blue-700',
+icon: 'fa-table-tennis-paddle-ball',
+description: 'Head-to-Head 2-Player neon paddle combat! Play locally against a friend on the same keyboard or touchscreen.',
+controls: 'P1 (Cyan): W (Up) / S (Down)\nP2 (Pink): Up Arrow / Down Arrow',
+mode: '2 Player Local'
+},
+{
+id: 'memory',
+title: 'Synth Tile Matcher',
+category: 'Puzzle',
+tags: ['Brain', 'Puzzle'],
+rating: 4.6,
+plays: '75K',
+color: 'pink',
+gradient: 'from-pink-500 to-purple-700',
+icon: 'fa-brain',
+description: 'Train your memory with synthwave icon tiles! Flip cards to locate matching pairs in as few turns as possible.',
+controls: 'Desktop: Arrow Keys to navigate cards, Enter or Space to flip tile.\nMobile: Tap cards.',
+mode: 'Single Player'
+},
+{
+id: 'stacker',
+title: 'Tower Stacker Pro',
+category: 'Strategy',
+tags: ['New', 'Precision', 'Strategy'],
+rating: 4.8,
+plays: '110K',
+color: 'amber',
+gradient: 'from-amber-500 to-orange-700',
+icon: 'fa-layer-group',
+description: 'Test your timing! Place sliding blocks directly on top of each other. Overhanging parts will get sliced off as tower climbs.',
+controls: 'Desktop: Up/Down Arrow, Spacebar, or Enter to drop block.\nMobile: Tap screen.',
+mode: 'Single Player'
+},
+{
+id: 'asteroids',
+title: 'Neon Asteroid Miner',
+category: 'Action',
+tags: ['Hot', 'Shooter', 'Space'],
+rating: 4.9,
+plays: '134K',
+color: 'cyan',
+gradient: 'from-cyan-600 to-indigo-800',
+icon: 'fa-meteor',
+description: 'Pilot your neon ship through an intense asteroid field! Rotate, thrust, and vaporize space debris.',
+controls: 'Desktop: Left/Right Arrows to Rotate, Up Arrow to Thrust, Spacebar/Enter to Fire.',
+mode: 'Single Player'
+},
+{
+id: 'hopper',
+title: 'Cyber Hopper 3000',
+category: 'Arcade',
+tags: ['Retro', 'Arcade', 'Action'],
+rating: 4.7,
+plays: '98K',
+color: 'emerald',
+gradient: 'from-emerald-500 to-cyan-700',
+icon: 'fa-frog',
+description: 'Cross glowing cyber-highways and hazardous quantum rivers! Time your hops carefully to make it across safely.',
+controls: 'Desktop: Arrow Keys or WASD to hop in 4 directions.\nMobile: Touch direction buttons.',
+mode: 'Single Player'
+}
+];
+
+const CATEGORIES = ['All', 'Action', 'Arcade', '2 Player', 'Puzzle', 'Strategy'];
+
+/* AUDIO SYNTHESIZER */
+let audioCtx = null;
+let soundEnabled = true;
+
+function initAudio() {
+if (!audioCtx) {
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+}
+
+function playSound(type) {
+if (!soundEnabled) return;
+initAudio();
+if (audioCtx.state === 'suspended') audioCtx.resume();
+
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+const now = audioCtx.currentTime;
+
+if (type === 'eat' || type === 'click') {
+osc.type = 'sine';
+osc.frequency.setValueAtTime(350, now);
+osc.frequency.exponentialRampToValueAtTime(700, now + 0.08);
+gain.gain.setValueAtTime(0.15, now);
+gain.gain.linearRampToValueAtTime(0, now + 0.08);
+osc.start(now);
+osc.stop(now + 0.08);
+} else if (type === 'shoot' || type === 'flap') {
+osc.type = 'square';
+osc.frequency.setValueAtTime(600, now);
+osc.frequency.exponentialRampToValueAtTime(200, now + 0.08);
+gain.gain.setValueAtTime(0.1, now);
+gain.gain.linearRampToValueAtTime(0, now + 0.08);
+osc.start(now);
+osc.stop(now + 0.08);
+} else if (type === 'hit') {
+osc.type = 'square';
+osc.frequency.setValueAtTime(180, now);
+osc.frequency.exponentialRampToValueAtTime(50, now + 0.12);
+gain.gain.setValueAtTime(0.2, now);
+gain.gain.linearRampToValueAtTime(0, now + 0.12);
+osc.start(now);
+osc.stop(now + 0.12);
+} else if (type === 'score' || type === 'stack') {
+osc.type = 'triangle';
+osc.frequency.setValueAtTime(520, now);
+osc.frequency.setValueAtTime(880, now + 0.1);
+gain.gain.setValueAtTime(0.2, now);
+gain.gain.linearRampToValueAtTime(0, now + 0.2);
+osc.start(now);
+osc.stop(now + 0.2);
+} else if (type === 'gameover') {
+osc.type = 'sawtooth';
+osc.frequency.setValueAtTime(250, now);
+osc.frequency.exponentialRampToValueAtTime(40, now + 0.4);
+gain.gain.setValueAtTime(0.3, now);
+gain.gain.linearRampToValueAtTime(0, now + 0.4);
+osc.start(now);
+osc.stop(now + 0.4);
+}
+}
+
+function toggleAudio() {
+soundEnabled = !soundEnabled;
+const icon = document.getElementById('soundIcon');
+const text = document.getElementById('soundText');
+if (soundEnabled) {
+icon.className = 'fa-solid fa-volume-high text-cyan-400';
+text.innerText = 'SFX ON';
+} else {
+icon.className = 'fa-solid fa-volume-xmark text-slate-500';
+text.innerText = 'SFX OFF';
+}
+}
+
+/* PORTAL STATE & LOCAL STORAGE */
+let currentCategory = 'All';
+let currentSearchQuery = '';
+let currentSort = 'popular';
+let activeGameObj = null;
+let gameLoopId = null;
+
+let favorites = JSON.parse(localStorage.getItem('poki_favorites') || '[]');
+const highScores = {
+pacrunner: parseInt(localStorage.getItem('poki_hs_pacrunner') || '0'),
+galaga: parseInt(localStorage.getItem('poki_hs_galaga') || '0'),
+tetris: parseInt(localStorage.getItem('poki_hs_tetris') || '0'),
+crossyroad: parseInt(localStorage.getItem('poki_hs_crossyroad') || '0'),
+dinorun: parseInt(localStorage.getItem('poki_hs_dinorun') || '0'),
+snake: parseInt(localStorage.getItem('poki_hs_snake') || '0'),
+flappy: parseInt(localStorage.getItem('poki_hs_flappy') || '0'),
+breakout: parseInt(localStorage.getItem('poki_hs_breakout') || '0'),
+invaders: parseInt(localStorage.getItem('poki_hs_invaders') || '0'),
+pong: parseInt(localStorage.getItem('poki_hs_pong') || '0'),
+memory: parseInt(localStorage.getItem('poki_hs_memory') || '0'),
+stacker: parseInt(localStorage.getItem('poki_hs_stacker') || '0'),
+asteroids: parseInt(localStorage.getItem('poki_hs_asteroids') || '0'),
+hopper: parseInt(localStorage.getItem('poki_hs_hopper') || '0')
+};
+
+const keys = {};
+window.addEventListener('keydown', e => {
+keys[e.key] = true;
+if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code) && activeGameObj) {
+e.preventDefault();
+}
+handleKeyPress(e);
+});
+window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+function saveFavorites() {
+localStorage.setItem('poki_favorites', JSON.stringify(favorites));
+document.getElementById('favCountBadge').innerText = favorites.length;
+}
+
+function toggleFavorite(gameId, event) {
+if (event) event.stopPropagation();
+playSound('click');
+if (favorites.includes(gameId)) favorites = favorites.filter(id => id !== gameId);
+else favorites.push(gameId);
+saveFavorites();
+renderGamesGrid();
+if (activeGameObj && activeGameObj.id === gameId) updateModalFavBtn();
+}
+
+function renderCategories() {
+const container = document.getElementById('categoryPills');
+container.innerHTML = CATEGORIES.map(cat => {
+const isActive = cat === currentCategory;
+return `
+<button onclick="setCategory('${cat}')" class="px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+isActive
+? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+: 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+}">
+${cat}
+</button>
+`;
+}).join('');
+}
+
+function setCategory(cat) {
+playSound('click');
+currentCategory = cat;
+renderCategories();
+renderGamesGrid();
+}
+
+function handleSearch(val) {
+currentSearchQuery = val.toLowerCase().trim();
+renderGamesGrid();
+}
+
+function handleSortChange(val) {
+currentSort = val;
+renderGamesGrid();
+}
+
+function filterFavorites() { setCategory('Favorites'); }
+function resetFilters() {
+currentCategory = 'All';
+currentSearchQuery = '';
+document.getElementById('searchInput').value = '';
+document.getElementById('mobileSearchInput').value = '';
+renderCategories();
+renderGamesGrid();
+}
+
+/* ============ GOOGLE ADSENSE CONFIG ============
+   1. Get approved at google.com/adsense and grab your publisher ID.
+   2. Paste it below AND in the <script> tag in <head>.
+   3. Create ad units in AdSense, paste each slot ID below.
+   4. Flip enabled to true. Until then you see grey placeholder boxes.        */
+const ADS = {
+  enabled: false,
+  client: 'ca-pub-XXXXXXXXXXXXXXXX',
+  slots: {
+    top:     '0000000001',   /* responsive banner under the hero   */
+    inGrid:  '0000000002',   /* native card inside the games grid  */
+    sidebar: '0000000003',   /* rectangle beside the active game   */
+    footer:  '0000000004'    /* responsive banner above the footer */
+  },
+  showPlaceholders: true,    /* set false to hide slots entirely while disabled */
+
+  /* ---- timed interstitial (full-screen ad between games) ---- */
+  interstitial: {
+    on: true,
+    slot: '0000000005',
+    everyMs: 5 * 60 * 1000,   /* show at most once per 5 minutes of play */
+    skipAfterMs: 5000,        /* Close button unlocks after this long     */
+    maxPerSession: 8
+  }
+};
+
+function adUnit(slotKey, opts) {
+  opts = opts || {};
+  const minH = opts.minHeight || 100;
+  if (ADS.enabled) {
+    return `<ins class="adsbygoogle" style="display:block;min-height:${minH}px"
+      data-ad-client="${ADS.client}"
+      data-ad-slot="${slotKey === 'interstitialSlot' ? ADS.interstitial.slot : ADS.slots[slotKey]}"
+      data-ad-format="${opts.format || 'auto'}"
+      data-full-width-responsive="true"></ins>`;
+  }
+  if (!ADS.showPlaceholders) return '';
+  return `<div class="ad-placeholder" style="min-height:${minH}px">
+    <i class="fa-solid fa-rectangle-ad"></i>
+    <span>AD SLOT &middot; ${slotKey}</span>
+  </div>`;
+}
+
+/* wraps an ad in a labelled frame so it never looks like site content */
+function adFrame(slotKey, opts) {
+  opts = opts || {};
+  const unit = adUnit(slotKey, opts);
+  if (!unit) return '';
+  return `<div class="ad-frame ${opts.className || ''}">
+    <span class="ad-label">Advertisement</span>
+    ${unit}
+  </div>`;
+}
+
+/* AdSense needs one push() per rendered <ins> */
+function pushAds(root) {
+  if (!ADS.enabled) return;
+  const units = (root || document).querySelectorAll('ins.adsbygoogle:not([data-ad-filled])');
+  units.forEach(u => {
+    u.setAttribute('data-ad-filled', '1');
+    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); }
+    catch (e) { console.warn('AdSense push failed', e); }
+  });
+}
+
+/* ============ TIMED INTERSTITIAL ============
+   Ads are NEVER shown during active gameplay (Google policy + it's rude).
+   When the 5-minute timer is up the ad is queued, then shown at the next
+   natural break: a game over, or when you come back to the lobby.          */
+const interstitial = {
+  lastShown: Date.now(),
+  shownCount: 0,
+  queued: false,
+  visible: false,
+  skipTimer: null,
+  tickTimer: null
+};
+
+function interstitialAllowed() {
+  const cfg = ADS.interstitial;
+  if (!cfg || !cfg.on) return false;
+  if (interstitial.shownCount >= cfg.maxPerSession) return false;
+  return true;
+}
+
+/* called on a 1s heartbeat - only marks the ad as due, never interrupts */
+function checkInterstitialTimer() {
+  if (!interstitialAllowed() || interstitial.visible) return;
+  if (Date.now() - interstitial.lastShown >= ADS.interstitial.everyMs) interstitial.queued = true;
+  if (interstitial.queued && atNaturalBreak()) showInterstitial();
+}
+
+/* a break = no game loop running (lobby, or a finished round) */
+function atNaturalBreak() {
+  if (gameLoopId) return false;
+  const modal = document.getElementById('gameLauncherModal');
+  const playing = modal && !modal.classList.contains('hidden');
+  if (!playing) return true;                       /* sitting in the lobby */
+  const ov = document.getElementById('gameOverlay');
+  return ov && !ov.classList.contains('hidden');   /* game over / pre-start */
+}
+
+function showInterstitial() {
+  if (!interstitialAllowed() || interstitial.visible) return;
+  const wrap = document.getElementById('adInterstitial');
+  const body = document.getElementById('adInterstitialBody');
+  const btn = document.getElementById('adInterstitialClose');
+  if (!wrap || !body) return;
+
+  stopCurrentGameLoop();
+  interstitial.visible = true;
+  interstitial.queued = false;
+  interstitial.shownCount++;
+
+  body.innerHTML = adUnit('interstitialSlot', { minHeight: 280, format: 'auto' });
+  pushAds(body);
+
+  wrap.classList.remove('hidden');
+  wrap.classList.add('flex');
+
+  let left = Math.ceil(ADS.interstitial.skipAfterMs / 1000);
+  btn.disabled = true;
+  btn.innerText = 'CLOSE IN ' + left;
+  clearInterval(interstitial.skipTimer);
+  interstitial.skipTimer = setInterval(() => {
+    left--;
+    if (left > 0) { btn.innerText = 'CLOSE IN ' + left; return; }
+    clearInterval(interstitial.skipTimer);
+    btn.disabled = false;
+    btn.innerText = 'CLOSE AD';
+  }, 1000);
+}
+
+function closeInterstitial() {
+  const wrap = document.getElementById('adInterstitial');
+  clearInterval(interstitial.skipTimer);
+  interstitial.visible = false;
+  interstitial.lastShown = Date.now();
+  if (wrap) { wrap.classList.add('hidden'); wrap.classList.remove('flex'); }
+  playSound('click');
+}
+
+function startInterstitialTimer() {
+  clearInterval(interstitial.tickTimer);
+  interstitial.lastShown = Date.now();
+  interstitial.tickTimer = setInterval(checkInterstitialTimer, 1000);
+}
+
+function renderStaticAds() {
+  const top = document.getElementById('adTop');
+  const foot = document.getElementById('adFooter');
+  if (top) top.innerHTML = adFrame('top', { minHeight: 100 });
+  if (foot) foot.innerHTML = adFrame('footer', { minHeight: 100 });
+  pushAds();
+}
+
+/* ============ GAME THUMBNAIL ART (inline pixel-art SVG) ============ */
+const ART_OPEN = '<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" class="w-full h-full">';
+const ART_CLOSE = '</svg>';
+
+const GAME_ART = {
+
+pacrunner: ART_OPEN + `
+<rect width="160" height="100" fill="#0b0712"/>
+<g stroke="#2563eb" stroke-width="3" fill="none">
+  <rect x="8" y="8" width="38" height="20" rx="4"/>
+  <rect x="58" y="8" width="44" height="20" rx="4"/>
+  <rect x="114" y="8" width="38" height="20" rx="4"/>
+  <rect x="8" y="46" width="30" height="16" rx="4"/>
+  <rect x="50" y="46" width="60" height="16" rx="4"/>
+  <rect x="122" y="46" width="30" height="16" rx="4"/>
+  <rect x="8" y="78" width="60" height="14" rx="4"/>
+  <rect x="80" y="78" width="72" height="14" rx="4"/>
+</g>
+<g fill="#fde68a">
+  <rect x="14" y="36" width="4" height="4"/><rect x="30" y="36" width="4" height="4"/>
+  <rect x="46" y="36" width="4" height="4"/><rect x="62" y="36" width="4" height="4"/>
+  <rect x="110" y="36" width="4" height="4"/><rect x="126" y="36" width="4" height="4"/>
+  <rect x="142" y="36" width="4" height="4"/>
+  <rect x="14" y="70" width="4" height="4"/><rect x="34" y="70" width="4" height="4"/>
+  <rect x="122" y="70" width="4" height="4"/><rect x="142" y="70" width="4" height="4"/>
+</g>
+<circle cx="78" cy="38" r="5" fill="#fbbf24"/>
+<path d="M88 38 m-11 0 a11 11 0 1 1 11 11 z" fill="#f59e0b"/>
+<g>
+  <path d="M112 32 a9 9 0 0 1 18 0 v12 l-3.6-3.6 -3.6 3.6 -3.6-3.6 -3.6 3.6 -3.6-3.6z" fill="#ec4899"/>
+  <rect x="116" y="34" width="4" height="5" fill="#fff"/><rect x="123" y="34" width="4" height="5" fill="#fff"/>
+  <rect x="118" y="36" width="2" height="3" fill="#1e1b4b"/><rect x="125" y="36" width="2" height="3" fill="#1e1b4b"/>
+</g>
+<g>
+  <path d="M30 64 a8 8 0 0 1 16 0 v11 l-3.2-3.2 -3.2 3.2 -3.2-3.2 -3.2 3.2z" fill="#22d3ee"/>
+  <rect x="33" y="66" width="4" height="4" fill="#fff"/><rect x="39" y="66" width="4" height="4" fill="#fff"/>
+</g>
+` + ART_CLOSE,
+
+galaga: ART_OPEN + `
+<rect width="160" height="100" fill="#0a0618"/>
+<g fill="#c4b5fd" opacity="0.85">
+  <rect x="12" y="10" width="2" height="2"/><rect x="48" y="6" width="2" height="2"/>
+  <rect x="96" y="12" width="2" height="2"/><rect x="134" y="8" width="2" height="2"/>
+  <rect x="28" y="30" width="2" height="2"/><rect x="146" y="40" width="2" height="2"/>
+  <rect x="8" y="58" width="2" height="2"/><rect x="118" y="62" width="2" height="2"/>
+</g>
+<g fill="#a78bfa">
+  <g transform="translate(30,18)"><rect x="4" y="0" width="10" height="4"/><rect x="0" y="4" width="18" height="4"/><rect x="4" y="8" width="4" height="4"/><rect x="10" y="8" width="4" height="4"/></g>
+  <g transform="translate(62,18)"><rect x="4" y="0" width="10" height="4"/><rect x="0" y="4" width="18" height="4"/><rect x="4" y="8" width="4" height="4"/><rect x="10" y="8" width="4" height="4"/></g>
+  <g transform="translate(94,18)"><rect x="4" y="0" width="10" height="4"/><rect x="0" y="4" width="18" height="4"/><rect x="4" y="8" width="4" height="4"/><rect x="10" y="8" width="4" height="4"/></g>
+</g>
+<g fill="#f472b6">
+  <g transform="translate(46,36)"><rect x="4" y="0" width="10" height="4"/><rect x="0" y="4" width="18" height="4"/><rect x="4" y="8" width="4" height="4"/><rect x="10" y="8" width="4" height="4"/></g>
+  <g transform="translate(78,36)"><rect x="4" y="0" width="10" height="4"/><rect x="0" y="4" width="18" height="4"/><rect x="4" y="8" width="4" height="4"/><rect x="10" y="8" width="4" height="4"/></g>
+</g>
+<g fill="#67e8f9">
+  <rect x="78" y="54" width="3" height="12"/><rect x="52" y="60" width="3" height="10"/>
+</g>
+<g fill="#22d3ee" transform="translate(66,74)">
+  <rect x="12" y="0" width="4" height="6"/><rect x="8" y="6" width="12" height="4"/>
+  <rect x="2" y="10" width="24" height="6"/><rect x="0" y="16" width="6" height="6"/><rect x="22" y="16" width="6" height="6"/>
+</g>
+` + ART_CLOSE,
+
+tetris: ART_OPEN + `
+<rect width="160" height="100" fill="#030a1a"/>
+<g stroke="#0e7490" stroke-width="1" opacity="0.5">
+  <path d="M36 0 V100 M52 0 V100 M68 0 V100 M84 0 V100 M100 0 V100 M116 0 V100"/>
+  <path d="M0 20 H160 M0 36 H160 M0 52 H160 M0 68 H160 M0 84 H160"/>
+</g>
+<g>
+  <rect x="68" y="4" width="32" height="16" fill="#22d3ee"/><rect x="68" y="20" width="16" height="16" fill="#22d3ee"/>
+  <rect x="70" y="6" width="28" height="4" fill="#a5f3fc"/>
+</g>
+<g>
+  <rect x="20" y="68" width="16" height="16" fill="#8b5cf6"/><rect x="36" y="68" width="16" height="16" fill="#8b5cf6"/>
+  <rect x="52" y="68" width="16" height="16" fill="#f59e0b"/><rect x="68" y="68" width="16" height="16" fill="#f59e0b"/>
+  <rect x="84" y="68" width="16" height="16" fill="#10b981"/><rect x="100" y="68" width="16" height="16" fill="#ec4899"/>
+  <rect x="116" y="68" width="16" height="16" fill="#ec4899"/><rect x="132" y="68" width="16" height="16" fill="#38bdf8"/>
+  <rect x="20" y="84" width="16" height="16" fill="#f59e0b"/><rect x="36" y="84" width="16" height="16" fill="#38bdf8"/>
+  <rect x="52" y="84" width="16" height="16" fill="#8b5cf6"/><rect x="68" y="84" width="16" height="16" fill="#10b981"/>
+  <rect x="84" y="84" width="16" height="16" fill="#ec4899"/><rect x="100" y="84" width="16" height="16" fill="#f59e0b"/>
+  <rect x="116" y="84" width="16" height="16" fill="#22d3ee"/><rect x="132" y="84" width="16" height="16" fill="#8b5cf6"/>
+</g>
+<rect x="20" y="84" width="128" height="16" fill="#fff" opacity="0.28"/>
+` + ART_CLOSE,
+
+crossyroad: ART_OPEN + `
+<rect width="160" height="100" fill="#041411"/>
+<rect x="0" y="0" width="160" height="18" fill="#064e3b"/>
+<rect x="0" y="18" width="160" height="24" fill="#111827"/>
+<rect x="0" y="42" width="160" height="16" fill="#065f46"/>
+<rect x="0" y="58" width="160" height="24" fill="#111827"/>
+<rect x="0" y="82" width="160" height="18" fill="#064e3b"/>
+<g fill="#fbbf24">
+  <rect x="0" y="29" width="12" height="2"/><rect x="24" y="29" width="12" height="2"/>
+  <rect x="48" y="29" width="12" height="2"/><rect x="72" y="29" width="12" height="2"/>
+  <rect x="96" y="29" width="12" height="2"/><rect x="120" y="29" width="12" height="2"/>
+  <rect x="144" y="29" width="12" height="2"/>
+  <rect x="12" y="69" width="12" height="2"/><rect x="36" y="69" width="12" height="2"/>
+  <rect x="60" y="69" width="12" height="2"/><rect x="84" y="69" width="12" height="2"/>
+  <rect x="108" y="69" width="12" height="2"/><rect x="132" y="69" width="12" height="2"/>
+</g>
+<g>
+  <rect x="16" y="21" width="30" height="14" rx="2" fill="#ef4444"/><rect x="22" y="23" width="18" height="5" fill="#fca5a5"/>
+  <rect x="100" y="22" width="34" height="13" rx="2" fill="#38bdf8"/><rect x="106" y="24" width="20" height="5" fill="#bae6fd"/>
+  <rect x="44" y="61" width="36" height="14" rx="2" fill="#a78bfa"/><rect x="50" y="63" width="22" height="5" fill="#ddd6fe"/>
+  <rect x="124" y="62" width="28" height="13" rx="2" fill="#f59e0b"/>
+</g>
+<g transform="translate(70,84)">
+  <rect x="4" y="0" width="12" height="4" fill="#fde047"/>
+  <rect x="0" y="4" width="20" height="8" fill="#facc15"/>
+  <rect x="6" y="2" width="3" height="3" fill="#1e1b4b"/><rect x="12" y="2" width="3" height="3" fill="#1e1b4b"/>
+  <rect x="2" y="12" width="4" height="3" fill="#f97316"/><rect x="14" y="12" width="4" height="3" fill="#f97316"/>
+</g>
+` + ART_CLOSE,
+
+dinorun: ART_OPEN + `
+<rect width="160" height="100" fill="#1a0f06"/>
+<circle cx="128" cy="24" r="14" fill="#f59e0b" opacity="0.35"/>
+<circle cx="128" cy="24" r="8" fill="#fbbf24"/>
+<rect x="0" y="76" width="160" height="24" fill="#431407"/>
+<rect x="0" y="76" width="160" height="3" fill="#f59e0b"/>
+<g fill="#7c2d12">
+  <rect x="10" y="86" width="6" height="2"/><rect x="40" y="90" width="8" height="2"/>
+  <rect x="88" y="86" width="6" height="2"/><rect x="130" y="92" width="8" height="2"/>
+</g>
+<g transform="translate(20,46)" fill="#34d399">
+  <rect x="14" y="0" width="16" height="12"/>
+  <rect x="28" y="4" width="6" height="4"/>
+  <rect x="18" y="4" width="4" height="4" fill="#042f2e"/>
+  <rect x="6" y="12" width="24" height="12"/>
+  <rect x="0" y="14" width="8" height="6"/>
+  <rect x="8" y="24" width="6" height="6"/><rect x="20" y="24" width="6" height="6"/>
+</g>
+<g fill="#10b981">
+  <rect x="96" y="56" width="8" height="20"/><rect x="90" y="62" width="6" height="8"/><rect x="104" y="60" width="6" height="10"/>
+  <rect x="140" y="62" width="7" height="14"/><rect x="134" y="66" width="6" height="6"/>
+</g>
+<g fill="#a78bfa" transform="translate(104,20)">
+  <rect x="10" y="4" width="12" height="5"/><rect x="22" y="2" width="6" height="4"/>
+  <rect x="0" y="0" width="12" height="4"/><rect x="2" y="9" width="10" height="3"/>
+</g>
+` + ART_CLOSE,
+
+snake: ART_OPEN + `
+<rect width="160" height="100" fill="#030f14"/>
+<g stroke="#0f766e" stroke-width="1" opacity="0.45">
+  <path d="M20 0 V100 M40 0 V100 M60 0 V100 M80 0 V100 M100 0 V100 M120 0 V100 M140 0 V100"/>
+  <path d="M0 20 H160 M0 40 H160 M0 60 H160 M0 80 H160"/>
+</g>
+<g fill="#10b981">
+  <rect x="22" y="62" width="16" height="16"/><rect x="42" y="62" width="16" height="16"/>
+  <rect x="62" y="62" width="16" height="16"/><rect x="62" y="42" width="16" height="16"/>
+  <rect x="62" y="22" width="16" height="16"/><rect x="82" y="22" width="16" height="16"/>
+</g>
+<g fill="#34d399">
+  <rect x="102" y="22" width="16" height="16"/>
+</g>
+<rect x="106" y="26" width="4" height="4" fill="#022c22"/><rect x="113" y="26" width="4" height="4" fill="#022c22"/>
+<circle cx="130" cy="70" r="7" fill="#f472b6"/>
+<circle cx="130" cy="70" r="3" fill="#fbcfe8"/>
+<g fill="#22d3ee" opacity="0.8"><rect x="26" y="26" width="6" height="6"/><rect x="136" y="46" width="6" height="6"/></g>
+` + ART_CLOSE,
+
+flappy: ART_OPEN + `
+<rect width="160" height="100" fill="#06101f"/>
+<g fill="#1e293b" opacity="0.7">
+  <rect x="14" y="14" width="26" height="8" rx="4"/><rect x="112" y="24" width="32" height="8" rx="4"/>
+</g>
+<g>
+  <rect x="42" y="0" width="22" height="30" fill="#0e7490"/><rect x="38" y="30" width="30" height="8" fill="#22d3ee"/>
+  <rect x="42" y="66" width="22" height="34" fill="#0e7490"/><rect x="38" y="58" width="30" height="8" fill="#22d3ee"/>
+  <rect x="112" y="0" width="22" height="18" fill="#0e7490"/><rect x="108" y="18" width="30" height="8" fill="#22d3ee"/>
+  <rect x="112" y="54" width="22" height="46" fill="#0e7490"/><rect x="108" y="46" width="30" height="8" fill="#22d3ee"/>
+</g>
+<g transform="translate(78,42)">
+  <rect x="4" y="0" width="14" height="4" fill="#fbbf24"/>
+  <rect x="0" y="4" width="22" height="12" fill="#f59e0b"/>
+  <rect x="4" y="16" width="14" height="4" fill="#fbbf24"/>
+  <rect x="14" y="6" width="4" height="4" fill="#fff"/><rect x="16" y="7" width="2" height="2" fill="#1e1b4b"/>
+  <rect x="22" y="8" width="6" height="4" fill="#ef4444"/>
+  <rect x="2" y="8" width="10" height="5" fill="#fde68a"/>
+</g>
+<rect x="0" y="94" width="160" height="6" fill="#0f766e"/>
+` + ART_CLOSE,
+
+breakout: ART_OPEN + `
+<rect width="160" height="100" fill="#07040f"/>
+<g>
+  <rect x="6" y="10" width="34" height="10" rx="2" fill="#ef4444"/><rect x="44" y="10" width="34" height="10" rx="2" fill="#f59e0b"/>
+  <rect x="82" y="10" width="34" height="10" rx="2" fill="#ef4444"/><rect x="120" y="10" width="34" height="10" rx="2" fill="#f59e0b"/>
+  <rect x="6" y="24" width="34" height="10" rx="2" fill="#f59e0b"/><rect x="44" y="24" width="34" height="10" rx="2" fill="#10b981"/>
+  <rect x="82" y="24" width="34" height="10" rx="2" fill="#f59e0b"/><rect x="120" y="24" width="34" height="10" rx="2" fill="#10b981"/>
+  <rect x="6" y="38" width="34" height="10" rx="2" fill="#22d3ee"/><rect x="44" y="38" width="34" height="10" rx="2" fill="#8b5cf6"/>
+  <rect x="120" y="38" width="34" height="10" rx="2" fill="#8b5cf6"/>
+</g>
+<g stroke="#67e8f9" stroke-width="2" opacity="0.6" fill="none"><path d="M60 82 L84 58 L98 44"/></g>
+<circle cx="99" cy="43" r="5" fill="#f0f9ff"/>
+<rect x="46" y="84" width="46" height="8" rx="4" fill="#22d3ee"/>
+<rect x="52" y="86" width="26" height="3" rx="1" fill="#cffafe"/>
+` + ART_CLOSE,
+
+invaders: ART_OPEN + `
+<rect width="160" height="100" fill="#05050f"/>
+<g fill="#475569"><rect x="18" y="4" width="2" height="2"/><rect x="74" y="6" width="2" height="2"/><rect x="140" y="4" width="2" height="2"/></g>
+<g fill="#a78bfa">
+  <g transform="translate(18,14)"><rect x="4" y="0" width="12" height="4"/><rect x="0" y="4" width="20" height="4"/><rect x="4" y="8" width="4" height="4"/><rect x="12" y="8" width="4" height="4"/><rect x="4" y="2" width="3" height="3" fill="#05050f"/><rect x="13" y="2" width="3" height="3" fill="#05050f"/></g>
+  <g transform="translate(58,14)"><rect x="4" y="0" width="12" height="4"/><rect x="0" y="4" width="20" height="4"/><rect x="4" y="8" width="4" height="4"/><rect x="12" y="8" width="4" height="4"/><rect x="4" y="2" width="3" height="3" fill="#05050f"/><rect x="13" y="2" width="3" height="3" fill="#05050f"/></g>
+  <g transform="translate(98,14)"><rect x="4" y="0" width="12" height="4"/><rect x="0" y="4" width="20" height="4"/><rect x="4" y="8" width="4" height="4"/><rect x="12" y="8" width="4" height="4"/><rect x="4" y="2" width="3" height="3" fill="#05050f"/><rect x="13" y="2" width="3" height="3" fill="#05050f"/></g>
+  <g transform="translate(134,14)"><rect x="4" y="0" width="12" height="4"/><rect x="0" y="4" width="20" height="4"/><rect x="4" y="8" width="4" height="4"/><rect x="12" y="8" width="4" height="4"/></g>
+</g>
+<g fill="#f472b6">
+  <g transform="translate(38,32)"><rect x="2" y="0" width="16" height="4"/><rect x="0" y="4" width="20" height="4"/><rect x="2" y="8" width="5" height="4"/><rect x="13" y="8" width="5" height="4"/></g>
+  <g transform="translate(78,32)"><rect x="2" y="0" width="16" height="4"/><rect x="0" y="4" width="20" height="4"/><rect x="2" y="8" width="5" height="4"/><rect x="13" y="8" width="5" height="4"/></g>
+  <g transform="translate(118,32)"><rect x="2" y="0" width="16" height="4"/><rect x="0" y="4" width="20" height="4"/><rect x="2" y="8" width="5" height="4"/><rect x="13" y="8" width="5" height="4"/></g>
+</g>
+<g fill="#10b981" opacity="0.85">
+  <path d="M18 62 h26 v12 h-8 v-5 h-10 v5 h-8z"/>
+  <path d="M112 62 h26 v12 h-8 v-5 h-10 v5 h-8z"/>
+</g>
+<rect x="76" y="50" width="3" height="10" fill="#fde68a"/>
+<g fill="#22d3ee" transform="translate(64,82)">
+  <rect x="12" y="0" width="4" height="5"/><rect x="8" y="5" width="12" height="4"/><rect x="0" y="9" width="28" height="8"/>
+</g>
+` + ART_CLOSE,
+
+pong: ART_OPEN + `
+<rect width="160" height="100" fill="#04060f"/>
+<g fill="#334155">
+  <rect x="78" y="4" width="4" height="10"/><rect x="78" y="20" width="4" height="10"/>
+  <rect x="78" y="36" width="4" height="10"/><rect x="78" y="52" width="4" height="10"/>
+  <rect x="78" y="68" width="4" height="10"/><rect x="78" y="84" width="4" height="10"/>
+</g>
+<rect x="10" y="26" width="7" height="34" rx="3" fill="#22d3ee"/>
+<rect x="143" y="48" width="7" height="34" rx="3" fill="#f472b6"/>
+<g stroke="#e2e8f0" stroke-width="2" opacity="0.35" fill="none"><path d="M24 40 L62 58 L92 44"/></g>
+<rect x="92" y="40" width="9" height="9" rx="2" fill="#f8fafc"/>
+<text x="54" y="26" font-family="monospace" font-size="20" fill="#22d3ee" opacity="0.65">3</text>
+<text x="98" y="26" font-family="monospace" font-size="20" fill="#f472b6" opacity="0.65">2</text>
+` + ART_CLOSE,
+
+memory: ART_OPEN + `
+<rect width="160" height="100" fill="#0b0518"/>
+<g>
+  <rect x="10" y="10" width="32" height="34" rx="5" fill="#1e1b4b" stroke="#6366f1" stroke-width="2"/>
+  <circle cx="26" cy="27" r="8" fill="#22d3ee"/>
+  <rect x="50" y="10" width="32" height="34" rx="5" fill="#1e1b4b" stroke="#6366f1" stroke-width="2"/>
+  <path d="M66 18 l7 12 h-14z" fill="#f472b6"/>
+  <rect x="90" y="10" width="32" height="34" rx="5" fill="#312e81" stroke="#818cf8" stroke-width="2"/>
+  <text x="101" y="34" font-family="monospace" font-size="18" fill="#c7d2fe">?</text>
+  <rect x="130" y="10" width="22" height="34" rx="5" fill="#312e81" stroke="#818cf8" stroke-width="2"/>
+  <text x="136" y="34" font-family="monospace" font-size="18" fill="#c7d2fe">?</text>
+  <rect x="10" y="54" width="32" height="34" rx="5" fill="#312e81" stroke="#818cf8" stroke-width="2"/>
+  <text x="21" y="78" font-family="monospace" font-size="18" fill="#c7d2fe">?</text>
+  <rect x="50" y="54" width="32" height="34" rx="5" fill="#1e1b4b" stroke="#6366f1" stroke-width="2"/>
+  <path d="M66 62 l7 12 h-14z" fill="#f472b6"/>
+  <rect x="90" y="54" width="32" height="34" rx="5" fill="#1e1b4b" stroke="#6366f1" stroke-width="2"/>
+  <rect x="98" y="62" width="16" height="16" rx="3" fill="#fbbf24"/>
+  <rect x="130" y="54" width="22" height="34" rx="5" fill="#1e1b4b" stroke="#6366f1" stroke-width="2"/>
+  <circle cx="141" cy="71" r="8" fill="#22d3ee"/>
+</g>
+` + ART_CLOSE,
+
+stacker: ART_OPEN + `
+<rect width="160" height="100" fill="#0a0a16"/>
+<g opacity="0.35" stroke="#1e293b" stroke-width="1"><path d="M0 84 H160 M0 70 H160 M0 56 H160 M0 42 H160 M0 28 H160"/></g>
+<g>
+  <rect x="34" y="84" width="92" height="14" fill="#6d28d9"/>
+  <rect x="40" y="70" width="80" height="14" fill="#7c3aed"/>
+  <rect x="46" y="56" width="66" height="14" fill="#8b5cf6"/>
+  <rect x="52" y="42" width="52" height="14" fill="#a78bfa"/>
+  <rect x="58" y="28" width="38" height="14" fill="#c4b5fd"/>
+</g>
+<rect x="88" y="12" width="38" height="14" fill="#f59e0b"/>
+<rect x="90" y="14" width="34" height="3" fill="#fde68a"/>
+<g fill="#ef4444" opacity="0.9"><rect x="22" y="36" width="10" height="8"/><rect x="120" y="50" width="10" height="8"/></g>
+<g stroke="#f59e0b" stroke-width="2" opacity="0.5" fill="none"><path d="M126 19 h26"/></g>
+` + ART_CLOSE,
+
+asteroids: ART_OPEN + `
+<rect width="160" height="100" fill="#04040c"/>
+<g fill="#cbd5e1" opacity="0.8">
+  <rect x="16" y="12" width="2" height="2"/><rect x="52" y="22" width="2" height="2"/>
+  <rect x="88" y="8" width="2" height="2"/><rect x="126" y="18" width="2" height="2"/>
+  <rect x="34" y="72" width="2" height="2"/><rect x="104" y="84" width="2" height="2"/>
+  <rect x="148" y="60" width="2" height="2"/>
+</g>
+<g fill="none" stroke="#94a3b8" stroke-width="2">
+  <path d="M24 44 l10-10 12 2 6 12 -6 12 -14 2 -10-8z" fill="#1e293b"/>
+  <path d="M110 18 l8-6 10 4 2 10 -8 8 -11-2z" fill="#1e293b"/>
+  <path d="M116 68 l9-5 9 5 2 11 -9 6 -10-5z" fill="#1e293b"/>
+</g>
+<g fill="#67e8f9"><rect x="86" y="40" width="3" height="3"/><rect x="100" y="32" width="3" height="3"/><rect x="112" y="26" width="3" height="3"/></g>
+<g transform="translate(60,46)">
+  <path d="M18 0 L30 26 L18 20 L6 26 Z" fill="#22d3ee" stroke="#a5f3fc" stroke-width="2"/>
+  <path d="M14 22 l4 12 4-12 -4 3z" fill="#f59e0b"/>
+</g>
+` + ART_CLOSE,
+
+hopper: ART_OPEN + `
+<rect width="160" height="100" fill="#041016"/>
+<rect x="0" y="0" width="160" height="14" fill="#065f46"/>
+<rect x="0" y="14" width="160" height="26" fill="#0c4a6e"/>
+<rect x="0" y="40" width="160" height="12" fill="#064e3b"/>
+<rect x="0" y="52" width="160" height="26" fill="#1f2937"/>
+<rect x="0" y="78" width="160" height="22" fill="#065f46"/>
+<g fill="#0ea5e9" opacity="0.5">
+  <rect x="0" y="20" width="160" height="2"/><rect x="0" y="32" width="160" height="2"/>
+</g>
+<g fill="#78350f">
+  <rect x="14" y="18" width="40" height="10" rx="3"/><rect x="88" y="18" width="46" height="10" rx="3"/>
+  <rect x="48" y="30" width="44" height="8" rx="3"/>
+</g>
+<g>
+  <rect x="18" y="58" width="32" height="14" rx="2" fill="#ef4444"/><rect x="24" y="60" width="18" height="5" fill="#fca5a5"/>
+  <rect x="96" y="58" width="36" height="14" rx="2" fill="#a78bfa"/><rect x="102" y="60" width="22" height="5" fill="#ddd6fe"/>
+</g>
+<g fill="#fbbf24"><rect x="0" y="64" width="12" height="2"/><rect x="60" y="64" width="12" height="2"/><rect x="144" y="64" width="12" height="2"/></g>
+<g transform="translate(70,80)">
+  <rect x="4" y="0" width="12" height="4" fill="#34d399"/>
+  <rect x="0" y="4" width="20" height="9" fill="#10b981"/>
+  <rect x="5" y="1" width="3" height="3" fill="#022c22"/><rect x="12" y="1" width="3" height="3" fill="#022c22"/>
+  <rect x="0" y="13" width="5" height="4" fill="#34d399"/><rect x="15" y="13" width="5" height="4" fill="#34d399"/>
+</g>
+` + ART_CLOSE
+
+};
+
+
+function renderGamesGrid() {
+const grid = document.getElementById('gamesGrid');
+const emptyState = document.getElementById('emptyState');
+
+let filtered = GAMES_DATABASE.filter(g => {
+let catMatch = false;
+if (currentCategory === 'All') catMatch = true;
+else if (currentCategory === 'Favorites') catMatch = favorites.includes(g.id);
+else catMatch = g.category === currentCategory || g.tags.includes(currentCategory);
+
+let searchMatch = g.title.toLowerCase().includes(currentSearchQuery) ||
+g.tags.some(t => t.toLowerCase().includes(currentSearchQuery));
+return catMatch && searchMatch;
+});
+
+if (currentSort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
+else if (currentSort === 'title') filtered.sort((a, b) => a.title.localeCompare(b.title));
+
+if (filtered.length === 0) {
+grid.classList.add('hidden');
+emptyState.classList.remove('hidden');
+emptyState.classList.add('flex');
+return;
+}
+
+grid.classList.remove('hidden');
+emptyState.classList.add('hidden');
+emptyState.classList.remove('flex');
+
+const cards = filtered.map(game => {
+const isFav = favorites.includes(game.id);
+const bestScore = highScores[game.id] || 0;
+
+return `
+<div onclick="launchGame('${game.id}')" class="poki-card bg-slate-900/90 border border-slate-800/80 rounded-3xl p-5 cursor-pointer flex flex-col justify-between relative overflow-hidden group shadow-xl">
+<div>
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-wrap gap-1.5">
+${game.tags.map(t => `<span class="bg-slate-800 border border-slate-700/80 text-slate-300 px-2 py-0.5 rounded-md text-[10px] font-bold">${t}</span>`).join('')}
+</div>
+<button onclick="toggleFavorite('${game.id}', event)" class="text-slate-600 hover:text-pink-500 transition text-sm">
+<i class="fa-solid fa-heart ${isFav ? 'text-pink-500' : ''}"></i>
+</button>
+</div>
+
+<div class="w-full aspect-[8/5] rounded-2xl bg-gradient-to-tr ${game.gradient} p-0.5 mb-4 shadow-inner">
+<div class="relative w-full h-full bg-slate-950 rounded-[14px] overflow-hidden">
+<div class="absolute inset-0 game-art">${GAME_ART[game.id] || ''}</div>
+<div class="absolute inset-0 art-grid"></div>
+<div class="absolute inset-0 art-scanlines"></div>
+<div class="absolute bottom-1.5 left-1.5 flex items-center gap-1 bg-slate-950/80 backdrop-blur-sm border border-slate-700/60 rounded-md px-1.5 py-0.5">
+<i class="fa-solid ${game.icon} text-[9px] text-${game.color}-400"></i>
+<span class="font-pixel text-[7px] text-slate-300 tracking-wider">${game.category.toUpperCase()}</span>
+</div>
+</div>
+</div>
+
+<h3 class="text-base font-extrabold text-white group-hover:text-purple-400 transition-colors mb-1">${game.title}</h3>
+<p class="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-4">${game.description}</p>
+</div>
+
+<div class="flex items-center justify-between border-t border-slate-800/80 pt-3 text-xs text-slate-400">
+<span class="flex items-center gap-1"><i class="fa-solid fa-star text-amber-400"></i> ${game.rating}</span>
+<span class="font-pixel text-[10px] text-amber-400">BEST: ${bestScore}</span>
+</div>
+</div>
+`;
+});
+
+/* drop a native ad card into the grid after the 8th game */
+const adCard = adFrame('inGrid', { minHeight: 240, format: 'rectangle', className: 'flex flex-col justify-center' });
+if (adCard && cards.length > 8) cards.splice(8, 0, adCard);
+else if (adCard && cards.length >= 4) cards.push(adCard);
+
+grid.innerHTML = cards.join('');
+pushAds(grid);
+}
+
+function launchRandomGame() {
+playSound('click');
+const randGame = GAMES_DATABASE[Math.floor(Math.random() * GAMES_DATABASE.length)];
+launchGame(randGame.id);
+}
+
+function launchGame(gameId) {
+playSound('click');
+activeGameObj = GAMES_DATABASE.find(g => g.id === gameId);
+if (!activeGameObj) return;
+
+document.getElementById('portalDashboard').classList.add('hidden');
+document.getElementById('gameLauncherModal').classList.remove('hidden');
+document.getElementById('gameLauncherModal').classList.add('flex');
+
+document.getElementById('activeGameTitle').innerText = activeGameObj.title.toUpperCase();
+document.getElementById('activeGameBadge').innerText = activeGameObj.category;
+document.getElementById('sidebarGameName').innerText = activeGameObj.title;
+document.getElementById('sidebarRating').innerText = activeGameObj.rating;
+document.getElementById('sidebarDesc').innerText = activeGameObj.description;
+document.getElementById('sidebarControls').innerText = activeGameObj.controls;
+document.getElementById('sidebarCategory').innerText = activeGameObj.category;
+document.getElementById('sidebarMode').innerText = activeGameObj.mode;
+document.getElementById('activeIconContainer').innerHTML = `<i class="fa-solid ${activeGameObj.icon}"></i>`;
+document.getElementById('activeHighScore').innerText = highScores[gameId] || 0;
+document.getElementById('activeScore').innerText = '0';
+
+updateModalFavBtn();
+
+const canvas = document.getElementById('activeCanvas');
+const domGrid = document.getElementById('activeDomGrid');
+canvas.classList.add('hidden');
+domGrid.classList.add('hidden');
+
+if (gameId === 'memory') domGrid.classList.remove('hidden');
+else canvas.classList.remove('hidden');
+
+setupTouchControls(gameId);
+const adSide = document.getElementById('adSidebar');
+if (adSide) { adSide.innerHTML = adFrame('sidebar', { minHeight: 250, format: 'rectangle' }); pushAds(adSide); }
+
+showOverlay('READY PLAYER ONE', 'Press Start Button or Spacebar to launch!');
+}
+
+function updateModalFavBtn() {
+if (!activeGameObj) return;
+const btn = document.getElementById('modalFavBtn');
+const isFav = favorites.includes(activeGameObj.id);
+btn.innerHTML = `<i class="fa-solid fa-heart ${isFav ? 'text-pink-500' : ''}"></i>`;
+}
+
+function toggleModalFav() {
+if (activeGameObj) toggleFavorite(activeGameObj.id);
+}
+
+function closeGameModal() {
+stopCurrentGameLoop();
+document.getElementById('gameLauncherModal').classList.add('hidden');
+document.getElementById('gameLauncherModal').classList.remove('flex');
+document.getElementById('portalDashboard').classList.remove('hidden');
+activeGameObj = null;
+renderGamesGrid();
+if (interstitial.queued) setTimeout(showInterstitial, 400);
+}
+
+function resetToHome() {
+closeGameModal();
+resetFilters();
+}
+
+function showOverlay(title, subtext) {
+document.getElementById('overlayHeader').innerText = title;
+document.getElementById('overlaySubtext').innerText = subtext;
+document.getElementById('gameOverlay').classList.remove('hidden');
+}
+
+function hideOverlay() {
+document.getElementById('gameOverlay').classList.add('hidden');
+}
+
+function triggerActiveGameStart() {
+if (interstitial.visible) return;
+hideOverlay();
+if (!activeGameObj) return;
+
+if (activeGameObj.id === 'pacrunner') startPacRunner();
+else if (activeGameObj.id === 'galaga') startGalaga();
+else if (activeGameObj.id === 'tetris') startTetris();
+else if (activeGameObj.id === 'crossyroad') startCrossyRoad();
+else if (activeGameObj.id === 'dinorun') startDinoRun();
+else if (activeGameObj.id === 'snake') startSnake();
+else if (activeGameObj.id === 'flappy') startFlappy();
+else if (activeGameObj.id === 'breakout') startBreakout();
+else if (activeGameObj.id === 'invaders') startInvaders();
+else if (activeGameObj.id === 'pong') startPong();
+else if (activeGameObj.id === 'memory') startMemory();
+else if (activeGameObj.id === 'stacker') startStacker();
+else if (activeGameObj.id === 'asteroids') startAsteroids();
+else if (activeGameObj.id === 'hopper') startHopper();
+}
+
+function stopCurrentGameLoop() {
+if (gameLoopId) {
+clearInterval(gameLoopId);
+cancelAnimationFrame(gameLoopId);
+gameLoopId = null;
+}
+}
+
+function toggleFullscreen() {
+const elem = document.getElementById('gameViewportContainer');
+if (!document.fullscreenElement) elem.requestFullscreen().catch(err => console.log(err));
+else document.exitFullscreen();
+}
+
+function resizeCanvas() {
+const canvas = document.getElementById('activeCanvas');
+const parent = document.getElementById('activePlayArea');
+canvas.width = parent.clientWidth;
+canvas.height = parent.clientHeight;
+}
+
+function handleGameOver(gameId, score) {
+stopCurrentGameLoop();
+playSound('gameover');
+
+const currentHigh = highScores[gameId] || 0;
+let isNewBest = false;
+
+if (score > currentHigh) {
+highScores[gameId] = score;
+localStorage.setItem(`poki_hs_${gameId}`, score.toString());
+document.getElementById('activeHighScore').innerText = score;
+isNewBest = true;
+}
+
+const headerText = isNewBest ? 'NEW HIGH SCORE!' : 'GAME OVER';
+const subText = isNewBest
+? `Incredible! New record of ${score} pts!`
+: `Final Score: ${score} pts. High Score: ${highScores[gameId] || 0}`;
+
+showOverlay(headerText, subText);
+renderGamesGrid();
+if (interstitial.queued) setTimeout(showInterstitial, 900);
+}
+
+/* KEYBOARD HANDLER */
+function handleKeyPress(e) {
+if (interstitial.visible) { e.preventDefault(); return; }
+if (!activeGameObj) return;
+const key = e.key;
+
+if (e.code === 'Space') {
+if (!document.getElementById('gameOverlay').classList.contains('hidden')) {
+triggerActiveGameStart();
+return;
+}
+}
+
+if (activeGameObj.id === 'pacrunner') {
+if (key === 'ArrowUp' || key === 'w' || key === 'W') pacDir = { x: 0, y: -1 };
+if (key === 'ArrowDown' || key === 's' || key === 'S') pacDir = { x: 0, y: 1 };
+if (key === 'ArrowLeft' || key === 'a' || key === 'A') pacDir = { x: -1, y: 0 };
+if (key === 'ArrowRight' || key === 'd' || key === 'D') pacDir = { x: 1, y: 0 };
+} else if (activeGameObj.id === 'galaga') {
+if (key === 'ArrowUp' || e.code === 'Space') fireGalagaLaser();
+} else if (activeGameObj.id === 'tetris') {
+if (key === 'ArrowLeft' || key === 'a' || key === 'A') moveTetris(-1);
+if (key === 'ArrowRight' || key === 'd' || key === 'D') moveTetris(1);
+if (key === 'ArrowUp' || key === 'w' || key === 'W') rotateTetris();
+if (key === 'ArrowDown' || key === 's' || key === 'S') dropTetris();
+} else if (activeGameObj.id === 'crossyroad') {
+if (key === 'ArrowUp' || key === 'w' || key === 'W') moveCrossy(0, -1);
+if (key === 'ArrowDown' || key === 's' || key === 'S') moveCrossy(0, 1);
+if (key === 'ArrowLeft' || key === 'a' || key === 'A') moveCrossy(-1, 0);
+if (key === 'ArrowRight' || key === 'd' || key === 'D') moveCrossy(1, 0);
+} else if (activeGameObj.id === 'dinorun') {
+if (key === 'ArrowUp' || key === 'w' || key === 'W' || e.code === 'Space') jumpDino();
+if (key === 'ArrowDown' || key === 's' || key === 'S') duckDino(true);
+} else if (activeGameObj.id === 'snake') {
+if ((key === 'ArrowUp' || key === 'w' || key === 'W') && snakeDir.y === 0) nextDir = { x: 0, y: -1 };
+if ((key === 'ArrowDown' || key === 's' || key === 'S') && snakeDir.y === 0) nextDir = { x: 0, y: 1 };
+if ((key === 'ArrowLeft' || key === 'a' || key === 'A') && snakeDir.x === 0) nextDir = { x: -1, y: 0 };
+if ((key === 'ArrowRight' || key === 'd' || key === 'D') && snakeDir.x === 0) nextDir = { x: 1, y: 0 };
+} else if (activeGameObj.id === 'flappy') {
+if (key === 'ArrowUp' || e.code === 'Space') flapBird();
+} else if (activeGameObj.id === 'invaders') {
+if (key === 'ArrowUp' || e.code === 'Space') fireInvaderLaser();
+} else if (activeGameObj.id === 'stacker') {
+if (key === 'ArrowDown' || key === 'ArrowUp' || e.code === 'Space' || e.code === 'Enter') dropStackBlock();
+} else if (activeGameObj.id === 'asteroids') {
+if (e.code === 'Space' || e.code === 'Enter') fireAsteroidLaser();
+} else if (activeGameObj.id === 'hopper') {
+if (key === 'ArrowUp' || key === 'w' || key === 'W') moveHopper(-1, 0);
+if (key === 'ArrowDown' || key === 's' || key === 'S') moveHopper(1, 0);
+if (key === 'ArrowLeft' || key === 'a' || key === 'A') moveHopper(0, -1);
+if (key === 'ArrowRight' || key === 'd' || key === 'D') moveHopper(0, 1);
+}
+}
+
+document.getElementById('activePlayArea').addEventListener('mousedown', (e) => {
+if (activeGameObj && activeGameObj.id === 'flappy') flapBird();
+else if (activeGameObj && activeGameObj.id === 'dinorun') jumpDino();
+});
+
+/* ==========================================================================
+NEW GAME 1: CYBER PAC-RUNNER
+========================================================================== */
+let pacPos = { x: 1, y: 1 };
+let pacDir = { x: 1, y: 0 };
+let pacScore = 0;
+let pacPowerTime = 0;
+let pacDots = [];
+let pacGhosts = [];
+const PAC_GRID = 15;
+
+function startPacRunner() {
+stopCurrentGameLoop();
+resizeCanvas();
+pacPos = { x: 1, y: 1 };
+pacDir = { x: 1, y: 0 };
+pacScore = 0;
+pacPowerTime = 0;
+document.getElementById('activeScore').innerText = '0';
+
+pacDots = [];
+for (let r = 1; r < PAC_GRID - 1; r++) {
+for (let c = 1; c < PAC_GRID - 1; c++) {
+if ((r % 2 !== 0 || c % 2 !== 0) && Math.random() > 0.15) {
+pacDots.push({ x: c, y: r, power: Math.random() < 0.08 });
+}
+}
+}
+
+pacGhosts = [
+{ x: 7, y: 7, color: '#f43f5e', vx: 1, vy: 0 },
+{ x: 8, y: 7, color: '#06b6d4', vx: -1, vy: 0 },
+{ x: 7, y: 8, color: '#ec4899', vx: 0, vy: 1 }
+];
+
+gameLoopId = setInterval(updatePacRunner, 160);
+}
+
+function updatePacRunner() {
+const canvas = document.getElementById('activeCanvas');
+let nextX = pacPos.x + pacDir.x;
+let nextY = pacPos.y + pacDir.y;
+
+if (nextX >= 1 && nextX < PAC_GRID - 1 && nextY >= 1 && nextY < PAC_GRID - 1) {
+pacPos.x = nextX;
+pacPos.y = nextY;
+}
+
+if (pacPowerTime > 0) pacPowerTime--;
+
+// Eat dots
+for (let i = pacDots.length - 1; i >= 0; i--) {
+let d = pacDots[i];
+if (d.x === pacPos.x && d.y === pacPos.y) {
+playSound('eat');
+pacScore += d.power ? 50 : 10;
+if (d.power) pacPowerTime = 30;
+document.getElementById('activeScore').innerText = pacScore;
+pacDots.splice(i, 1);
+}
+}
+
+// Move Ghosts
+pacGhosts.forEach(g => {
+if (Math.random() < 0.4) {
+const dirs = [{x:1,y:0}, {x:-1,y:0}, {x:0,y:1}, {x:0,y:-1}];
+const rd = dirs[Math.floor(Math.random() * dirs.length)];
+g.vx = rd.x; g.vy = rd.y;
+}
+let gx = g.x + g.vx;
+let gy = g.y + g.vy;
+if (gx >= 1 && gx < PAC_GRID - 1 && gy >= 1 && gy < PAC_GRID - 1) {
+g.x = gx; g.y = gy;
+}
+
+if (g.x === pacPos.x && g.y === pacPos.y) {
+if (pacPowerTime > 0) {
+playSound('score');
+pacScore += 200;
+document.getElementById('activeScore').innerText = pacScore;
+g.x = 7; g.y = 7;
+} else {
+handleGameOver('pacrunner', pacScore);
+}
+}
+});
+
+renderPacRunner();
+}
+
+function renderPacRunner() {
+const canvas = document.getElementById('activeCanvas');
+const ctx = canvas.getContext('2d');
+const cellW = canvas.width / PAC_GRID;
+const cellH = canvas.height / PAC_GRID;
+
+ctx.fillStyle = '#020617';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// Outer Bounds Grid
+ctx.strokeStyle = '#3b82f6';
+ctx.lineWidth = 3;
+ctx.strokeRect(cellW, cellH, cellW * (PAC_GRID - 2), cellH * (PAC_GRID - 2));
+
+// Dots
+pacDots.forEach(d => {
+ctx.fillStyle = d.power ? '#f59e0b' : '#38bdf8';
+ctx.beginPath();
+ctx.arc((d.x + 0.5) * cellW, (d.y + 0.5) * cellH, d.power ? cellW / 4 : cellW / 8, 0, Math.PI * 2);
+ctx.fill();
+});
+
+// Ghosts
+pacGhosts.forEach(g => {
+ctx.fillStyle = pacPowerTime > 0 ? '#3b82f6' : g.color;
+ctx.beginPath();
+ctx.arc((g.x + 0.5) * cellW, (g.y + 0.5) * cellH, cellW / 2.8, Math.PI, 0, false);
+ctx.lineTo((g.x + 0.8) * cellW, (g.y + 0.8) * cellH);
+ctx.lineTo((g.x + 0.2) * cellW, (g.y + 0.8) * cellH);
+ctx.closePath();
+ctx.fill();
+});
+
+// Pac-Player
+ctx.fillStyle = '#facc15';
+ctx.beginPath();
+ctx.arc((pacPos.x + 0.5) * cellW, (pacPos.y + 0.5) * cellH, cellW / 2.5, 0.2 * Math.PI, 1.8 * Math.PI);
+ctx.lineTo((pacPos.x + 0.5) * cellW, (pacPos.y + 0.5) * cellH);
+ctx.fill();
+}
+
+/* ==========================================================================
+NEW GAME 2: NEON GALAGA 3000
+========================================================================== */
+let galShipX = 0;
+let galLasers = [];
+let galEnemies = [];
+let galScore = 0;
+
+function startGalaga() {
+stopCurrentGameLoop();
+resizeCanvas();
+const canvas = document.getElementById('activeCanvas');
+galShipX = canvas.width / 2;
+galLasers = [];
+galScore = 0;
+document.getElementById('activeScore').innerText = '0';
+
+galEnemies = [];
+for (let r = 0; r < 4; r++) {
+for (let c = 0; c < 8; c++) {
+galEnemies.push({
+x: 40 + c * 45,
+baseY: 40 + r * 30,
+y: 40 + r * 30,
+angle: Math.random() * Math.PI,
+diving: false,
+alive: true
+});
+}
+}
+
+let lastTime = performance.now();
+function loop(now) {
+const dt = (now - lastTime) / 1000;
+lastTime = now;
+updateGalaga(dt);
+renderGalaga();
+if (activeGameObj && activeGameObj.id === 'galaga') gameLoopId = requestAnimationFrame(loop);
+}
+gameLoopId = requestAnimationFrame(loop);
+}
+
+function fireGalagaLaser() {
+if (!activeGameObj || activeGameObj.id !== 'galaga') return;
+const canvas = document.getElementById('activeCanvas');
+galLasers.push({ x: galShipX - 8, y: canvas.height - 40 });
+galLasers.push({ x: galShipX + 8, y: canvas.height - 40 });
+playSound('shoot');
+}
+
+function updateGalaga(dt) {
+if (!dt) return;
+const canvas = document.getElementById('activeCanvas');
+
+if (keys['ArrowLeft'] || keys['a'] || keys['A']) galShipX = Math.max(20, galShipX - 400 * dt);
+if (keys['ArrowRight'] || keys['d'] || keys['D']) galShipX = Math.min(canvas.width - 20, galShipX + 400 * dt);
+
+// Lasers
+for (let i = galLasers.length - 1; i >= 0; i--) {
+let l = galLasers[i];
+l.y -= 600 * dt;
+galEnemies.forEach(e => {
+if (e.alive && Math.abs(l.x - e.x) < 18 && Math.abs(l.y - e.y) < 15) {
+e.alive = false;
+galLasers.splice(i, 1);
+galScore += e.diving ? 50 : 20;
+document.getElementById('activeScore').innerText = galScore;
+playSound('hit');
+}
+});
+if (l && l.y < 0) galLasers.splice(i, 1);
+}
+
+// Enemies Diving
+galEnemies.forEach(e => {
+if (!e.alive) return;
+if (!e.diving && Math.random() < 0.002) e.diving = true;
+
+if (e.diving) {
+e.y += 180 * dt;
+e.x += Math.sin(e.y * 0.05) * 120 * dt;
+if (e.y > canvas.height) {
+e.y = -20;
+e.diving = false;
+}
+if (Math.hypot(e.x - galShipX, e.y - (canvas.height - 30)) < 22) {
+handleGameOver('galaga', galScore);
+}
+}
+});
+}
+
+function renderGalaga() {
+const canvas = document.getElementById('activeCanvas');
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#020617';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// Ship
+ctx.fillStyle = '#8b5cf6';
+ctx.beginPath();
+ctx.moveTo(galShipX, canvas.height - 40);
+ctx.lineTo(galShipX - 16, canvas.height - 15);
+ctx.lineTo(galShipX + 16, canvas.height - 15);
+ctx.closePath();
+ctx.fill();
+
+// Lasers
+ctx.fillStyle = '#06b6d4';
+galLasers.forEach(l => ctx.fillRect(l.x - 1.5, l.y, 3, 10));
+
+// Enemies
+galEnemies.forEach(e => {
+if (e.alive) {
+ctx.fillStyle = e.diving ? '#f43f5e' : '#f59e0b';
+ctx.beginPath();
+ctx.arc(e.x, e.y, 10, 0, Math.PI * 2);
+ctx.fill();
+}
+});
+}
+
+/* ==========================================================================
+NEW GAME 3: LASER TETRIS DX
+========================================================================== */
+let tetrisBoard = [];
+let tetrisPiece = null;
+let tetrisScore = 0;
+const TETRIS_ROWS = 16, TETRIS_COLS = 10;
+const TETRIS_SHAPES = [
+[[1,1,1,1]], // I
+[[1,1],[1,1]], // O
+[[0,1,0],[1,1,1]], // T
+[[1,0,0],[1,1,1]], // L
+[[0,0,1],[1,1,1]] // J
+];
+
+function startTetris() {
+stopCurrentGameLoop();
+resizeCanvas();
+tetrisBoard = Array(TETRIS_ROWS).fill(0).map(() => Array(TETRIS_COLS).fill(0));
+tetrisScore = 0;
+document.getElementById('activeScore').innerText = '0';
+
+spawnTetrisPiece();
+gameLoopId = setInterval(updateTetris, 500);
+}
+
+function spawnTetrisPiece() {
+const shape = TETRIS_SHAPES[Math.floor(Math.random() * TETRIS_SHAPES.length)];
+tetrisPiece = {
+shape,
+x: Math.floor(TETRIS_COLS / 2) - 1,
+y: 0,
+color: '#ec4899'
+};
+}
+
+function moveTetris(dir) {
+if (!tetrisPiece) return;
+tetrisPiece.x += dir;
+if (checkTetrisCollision()) tetrisPiece.x -= dir;
+renderTetris();
+}
+
+function rotateTetris() {
+if (!tetrisPiece) return;
+const prevShape = tetrisPiece.shape;
+tetrisPiece.shape = tetrisPiece.shape[0].map((_, i) => tetrisPiece.shape.map(row => row[i]).reverse());
+if (checkTetrisCollision()) tetrisPiece.shape = prevShape;
+renderTetris();
+}
+
+function dropTetris() {
+if (!tetrisPiece) return;
+tetrisPiece.y++;
+if (checkTetrisCollision()) {
+tetrisPiece.y--;
+lockTetrisPiece();
+}
+renderTetris();
+}
+
+function checkTetrisCollision() {
+for (let r = 0; r < tetrisPiece.shape.length; r++) {
+for (let c = 0; c < tetrisPiece.shape[r].length; c++) {
+if (tetrisPiece.shape[r][c]) {
+let newX = tetrisPiece.x + c;
+let newY = tetrisPiece.y + r;
+if (newX < 0 || newX >= TETRIS_COLS || newY >= TETRIS_ROWS || (newY >= 0 && tetrisBoard[newY][newX])) {
+return true;
+}
+}
+}
+}
+return false;
+}
+
+function lockTetrisPiece() {
+for (let r = 0; r < tetrisPiece.shape.length; r++) {
+for (let c = 0; c < tetrisPiece.shape[r].length; c++) {
+if (tetrisPiece.shape[r][c]) {
+if (tetrisPiece.y + r <= 0) {
+handleGameOver('tetris', tetrisScore);
+return;
+}
+tetrisBoard[tetrisPiece.y + r][tetrisPiece.x + c] = '#ec4899';
+}
+}
+}
+
+// Clear Lines
+for (let r = TETRIS_ROWS - 1; r >= 0; r--) {
+if (tetrisBoard[r].every(cell => cell !== 0)) {
+tetrisBoard.splice(r, 1);
+tetrisBoard.unshift(Array(TETRIS_COLS).fill(0));
+tetrisScore += 100;
+document.getElementById('activeScore').innerText = tetrisScore;
+playSound('score');
+r++;
+}
+}
+spawnTetrisPiece();
+}
+
+function updateTetris() {
+dropTetris();
+}
+
+function renderTetris() {
+const canvas = document.getElementById('activeCanvas');
+const ctx = canvas.getContext('2d');
+const cellW = canvas.width / TETRIS_COLS;
+const cellH = canvas.height / TETRIS_ROWS;
+
+ctx.fillStyle = '#020617';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// Board
+for (let r = 0; r < TETRIS_ROWS; r++) {
+for (let c = 0; c < TETRIS_COLS; c++) {
+if (tetrisBoard[r][c]) {
+ctx.fillStyle = tetrisBoard[r][c];
+ctx.fillRect(c * cellW + 1, r * cellH + 1, cellW - 2, cellH - 2);
+}
+}
+}
+
+// Falling piece
+if (tetrisPiece) {
+ctx.fillStyle = tetrisPiece.color;
+for (let r = 0; r < tetrisPiece.shape.length; r++) {
+for (let c = 0; c < tetrisPiece.shape[r].length; c++) {
+if (tetrisPiece.shape[r][c]) {
+ctx.fillRect((tetrisPiece.x + c) * cellW + 1, (tetrisPiece.y + r) * cellH + 1, cellW - 2, cellH - 2);
+}
+}
+}
+}
+}
+
+/* ==========================================================================
+NEW GAME 4: RETRO CROSSY ROAD
+========================================================================== */
+let crossyPos = { x: 3, y: 7 };
+let crossyScore = 0;
+let crossyLanes = [];
+const CROSSY_ROWS = 8, CROSSY_COLS = 7;
+
+function startCrossyRoad() {
+stopCurrentGameLoop();
+resizeCanvas();
+crossyPos = { x: 3, y: CROSSY_ROWS - 1 };
+crossyScore = 0;
+document.getElementById('activeScore').innerText = '0';
+
+crossyLanes = [];
+for (let r = 1; r < CROSSY_ROWS - 1; r++) {
+crossyLanes.push({
+row: r,
+speed: (Math.random() * 2 + 1) * (r % 2 === 0 ? 1 : -1),
+cars: [{ x: Math.random() * CROSSY_COLS }, { x: (Math.random() * CROSSY_COLS + 3) % CROSSY_COLS }]
+});
+}
+
+let lastTime = performance.now();
+function loop(now) {
+const dt = (now - lastTime) / 1000;
+lastTime = now;
+updateCrossy(dt);
+renderCrossy();
+if (activeGameObj && activeGameObj.id === 'crossyroad') gameLoopId = requestAnimationFrame(loop);
+}
+gameLoopId = requestAnimationFrame(loop);
+}
+
+function moveCrossy(dx, dy) {
+if (!activeGameObj || activeGameObj.id !== 'crossyroad') return;
+crossyPos.x = Math.max(0, Math.min(CROSSY_COLS - 1, crossyPos.x + dx));
+crossyPos.y = Math.max(0, Math.min(CROSSY_ROWS - 1, crossyPos.y + dy));
+playSound('click');
+
+if (dy < 0) {
+crossyScore += 10;
+document.getElementById('activeScore').innerText = crossyScore;
+}
+
+if (crossyPos.y === 0) {
+playSound('score');
+crossyScore += 100;
+document.getElementById('activeScore').innerText = crossyScore;
+crossyPos = { x: 3, y: CROSSY_ROWS - 1 };
+}
+}
+
+function updateCrossy(dt) {
+if (!dt) return;
+crossyLanes.forEach(lane => {
+lane.cars.forEach(car => {
+car.x += lane.speed * dt;
+if (car.x < -1) car.x = CROSSY_COLS;
+if (car.x > CROSSY_COLS) car.x = -1;
+
+if (lane.row === crossyPos.y && Math.abs(car.x - crossyPos.x) < 0.7) {
+handleGameOver('crossyroad', crossyScore);
+}
+});
+});
+}
+
+function renderCrossy() {
+const canvas = document.getElementById('activeCanvas');
+const ctx = canvas.getContext('2d');
+const cellW = canvas.width / CROSSY_COLS;
+const cellH = canvas.height / CROSSY_ROWS;
+
+ctx.fillStyle = '#020617';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// Grass Zones
+ctx.fillStyle = '#059669';
+ctx.fillRect(0, (CROSSY_ROWS - 1) * cellH, canvas.width, cellH);
+ctx.fillRect(0, 0, canvas.width, cellH);
+
+// Cars
+crossyLanes.forEach(lane => {
+ctx.fillStyle = '#ec4899';
+lane.cars.forEach(car => ctx.fillRect(car.x * cellW + 4, lane.row * cellH + 6, cellW - 8, cellH - 12));
+});
+
+// Hopper Mascot
+ctx.fillStyle = '#f59e0b';
+ctx.beginPath();
+ctx.arc((crossyPos.x + 0.5) * cellW, (crossyPos.y + 0.5) * cellH, Math.min(cellW, cellH) / 3, 0, Math.PI * 2);
+ctx.fill();
+}
+
+/* ==========================================================================
+NEW GAME 5: DINO CYBER RUN
+========================================================================== */
+let dinoY = 0;
+let dinoVy = 0;
+let isDinoDucking = false;
+let dinoObstacles = [];
+let dinoScore = 0;
+
+function startDinoRun() {
+stopCurrentGameLoop();
+resizeCanvas();
+dinoY = 0;
+dinoVy = 0;
+isDinoDucking = false;
+dinoObstacles = [];
+dinoScore = 0;
+document.getElementById('activeScore').innerText = '0';
+
+let lastTime = performance.now();
+function loop(now) {
+const dt = (now - lastTime) / 1000;
+lastTime = now;
+updateDino(dt);
+renderDino();
+if (activeGameObj && activeGameObj.id === 'dinorun') gameLoopId = requestAnimationFrame(loop);
+}
+gameLoopId = requestAnimationFrame(loop);
+}
+
+function jumpDino() {
+if (!activeGameObj || activeGameObj.id !== 'dinorun') return;
+if (dinoY === 0) {
+dinoVy = -480;
+playSound('flap');
+}
+}
+
+function duckDino(ducking) {
+isDinoDucking = ducking;
+}
+
+function updateDino(dt) {
+if (!dt) return;
+const canvas = document.getElementById('activeCanvas');
+
+dinoVy += 1200 * dt;
+dinoY += dinoVy * dt;
+if (dinoY > 0) {
+dinoY = 0;
+dinoVy = 0;
+}
+
+dinoScore += Math.floor(10 * dt);
+document.getElementById('activeScore').innerText = dinoScore;
+
+if (dinoObstacles.length === 0 || dinoObstacles[dinoObstacles.length - 1].x < canvas.width - 250) {
+dinoObstacles.push({
+x: canvas.width,
+w: 24,
+h: Math.random() < 0.5 ? 40 : 25,
+type: Math.random() < 0.3 ? 'bird' : 'cactus'
+});
+}
+
+for (let i = dinoObstacles.length - 1; i >= 0; i--) {
+let ob = dinoObstacles[i];
+ob.x -= 280 * dt;
+
+let groundY = canvas.height - 40;
+let dinoBoxY = groundY - (isDinoDucking ? 20 : 35) + dinoY;
+
+if (ob.x < 70 && ob.x + ob.w > 40) {
+if (ob.type === 'cactus' && dinoBoxY + 30 > groundY - ob.h) {
+handleGameOver('dinorun', dinoScore);
+return;
+}
+}
+
+if (ob.x < -30) dinoObstacles.splice(i, 1);
+}
+}
+
+function renderDino() {
+const canvas = document.getElementById('activeCanvas');
+const ctx = canvas.getContext('2d');
+const groundY = canvas.height - 40;
+
+ctx.fillStyle = '#020617';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// Ground Line
+ctx.strokeStyle = '#38bdf8';
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.moveTo(0, groundY);
+ctx.lineTo(canvas.width, groundY);
+ctx.stroke();
+
+// Dino T-Rex
+ctx.fillStyle = '#10b981';
+let dinoH = isDinoDucking ? 20 : 35;
+ctx.fillRect(40, groundY - dinoH + dinoY, 28, dinoH);
+
+// Obstacles
+ctx.fillStyle = '#f43f5e';
+dinoObstacles.forEach(ob => {
+ctx.fillRect(ob.x, groundY - ob.h, ob.w, ob.h);
+});
+}
+
+/* ==========================================================================
+EXISTING GAMES (SNAKE, FLAPPY, BREAKOUT, INVADERS, PONG, MEMORY, STACKER, ASTEROIDS, HOPPER)
+========================================================================== */
+let snake = [], snakeDir = { x: 1, y: 0 }, nextDir = { x: 1, y: 0 }, snakeFood = { x: 0, y: 0 }, snakeScore = 0;
+const GRID_SZ = 20;
+
+function startSnake() {
+stopCurrentGameLoop(); resizeCanvas();
+snake = [{ x: 5, y: 5 }, { x: 4, y: 5 }, { x: 3, y: 5 }];
+snakeDir = { x: 1, y: 0 }; nextDir = { x: 1, y: 0 }; snakeScore = 0;
+document.getElementById('activeScore').innerText = '0';
+spawnSnakeFood();
+gameLoopId = setInterval(updateSnake, 100);
+}
+
+function spawnSnakeFood() {
+const canvas = document.getElementById('activeCanvas');
+snakeFood = {
+x: Math.floor(Math.random() * (Math.floor(canvas.width / GRID_SZ) - 2)) + 1,
+y: Math.floor(Math.random() * (Math.floor(canvas.height / GRID_SZ) - 2)) + 1
+};
+}
+
+function updateSnake() {
+snakeDir = nextDir;
+const head = { x: snake[0].x + snakeDir.x, y: snake[0].y + snakeDir.y };
+const canvas = document.getElementById('activeCanvas');
+
+if (head.x < 0 || head.x >= Math.floor(canvas.width / GRID_SZ) || head.y < 0 || head.y >= Math.floor(canvas.height / GRID_SZ)) {
+handleGameOver('snake', snakeScore); return;
+}
+for (let seg of snake) { if (seg.x === head.x && seg.y === head.y) { handleGameOver('snake', snakeScore); return; } }
+
+snake.unshift(head);
+if (head.x === snakeFood.x && head.y === snakeFood.y) {
+playSound('eat'); snakeScore += 10;
+document.getElementById('activeScore').innerText = snakeScore;
+spawnSnakeFood();
+} else { snake.pop(); }
+renderSnake();
+}
+
+function renderSnake() {
+const canvas = document.getElementById('activeCanvas');
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = '#ec4899'; ctx.fillRect(snakeFood.x * GRID_SZ + 2, snakeFood.y * GRID_SZ + 2, GRID_SZ - 4, GRID_SZ - 4);
+ctx.fillStyle = '#10b981';
+snake.forEach(seg => ctx.fillRect(seg.x * GRID_SZ + 1, seg.y * GRID_SZ + 1, GRID_SZ - 2, GRID_SZ - 2));
+}
+
+/* FLAPPY */
+let birdY = 200, birdVy = 0, birdPipes = [], birdScore = 0;
+function startFlappy() {
+stopCurrentGameLoop(); resizeCanvas();
+birdY = 200; birdVy = 0; birdPipes = []; birdScore = 0;
+document.getElementById('activeScore').innerText = '0';
+let lastTime = performance.now();
+function loop(now) {
+const dt = (now - lastTime) / 1000; lastTime = now;
+updateFlappy(dt); renderFlappy();
+if (activeGameObj && activeGameObj.id === 'flappy') gameLoopId = requestAnimationFrame(loop);
+}
+gameLoopId = requestAnimationFrame(loop);
+}
+function flapBird() { if (activeGameObj && activeGameObj.id === 'flappy') { birdVy = -320; playSound('flap'); } }
+function updateFlappy(dt) {
+if (!dt) return; birdVy += 900 * dt; birdY += birdVy * dt;
+const canvas = document.getElementById('activeCanvas');
+if (birdY < 0 || birdY > canvas.height) { handleGameOver('flappy', birdScore); return; }
+if (birdPipes.length === 0 || birdPipes[birdPipes.length - 1].x < canvas.width - 220) {
+birdPipes.push({ x: canvas.width, topH: Math.random() * (canvas.height - 240) + 50, gapH: 140, passed: false });
+}
+for (let i = birdPipes.length - 1; i >= 0; i--) {
+let p = birdPipes[i]; p.x -= 180 * dt;
+if (p.x < 80 && p.x + 50 > 50) {
+if (birdY - 12 < p.topH || birdY + 12 > p.topH + p.gapH) { handleGameOver('flappy', birdScore); return; }
+}
+if (!p.passed && p.x + 50 < 50) { p.passed = true; birdScore += 10; document.getElementById('activeScore').innerText = birdScore; playSound('score'); }
+if (p.x < -60) birdPipes.splice(i, 1);
+}
+}
+function renderFlappy() {
+const canvas = document.getElementById('activeCanvas'); const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = '#8b5cf6';
+birdPipes.forEach(p => { ctx.fillRect(p.x, 0, 50, p.topH); ctx.fillRect(p.x, p.topH + p.gapH, 50, canvas.height - p.topH - p.gapH); });
+ctx.fillStyle = '#06b6d4'; ctx.beginPath(); ctx.arc(60, birdY, 14, 0, Math.PI * 2); ctx.fill();
+}
+
+/* BREAKOUT */
+let breakoutPadX = 0, breakoutBall = { x: 0, y: 0, vx: 0, vy: 0 }, breakoutBricks = [], breakoutScore = 0;
+function startBreakout() {
+stopCurrentGameLoop(); resizeCanvas(); const canvas = document.getElementById('activeCanvas');
+breakoutPadX = canvas.width / 2 - 50; breakoutBall = { x: canvas.width / 2, y: canvas.height - 60, vx: 220, vy: -220 };
+breakoutScore = 0; document.getElementById('activeScore').innerText = '0'; breakoutBricks = [];
+for (let r = 0; r < 4; r++) {
+for (let c = 0; c < 8; c++) breakoutBricks.push({ x: 20 + c * ((canvas.width - 40) / 8), y: 40 + r * 28, w: ((canvas.width - 40) / 8) - 4, h: 22, active: true });
+}
+let lastTime = performance.now();
+function loop(now) {
+const dt = (now - lastTime) / 1000; lastTime = now;
+updateBreakout(dt); renderBreakout();
+if (activeGameObj && activeGameObj.id === 'breakout') gameLoopId = requestAnimationFrame(loop);
+}
+gameLoopId = requestAnimationFrame(loop);
+}
+function updateBreakout(dt) {
+if (!dt) return; const canvas = document.getElementById('activeCanvas');
+if (keys['ArrowLeft'] || keys['a']) breakoutPadX = Math.max(0, breakoutPadX - 450 * dt);
+if (keys['ArrowRight'] || keys['d']) breakoutPadX = Math.min(canvas.width - 100, breakoutPadX + 450 * dt);
+breakoutBall.x += breakoutBall.vx * dt; breakoutBall.y += breakoutBall.vy * dt;
+if (breakoutBall.x < 10 || breakoutBall.x > canvas.width - 10) breakoutBall.vx *= -1;
+if (breakoutBall.y < 10) breakoutBall.vy *= -1;
+if (breakoutBall.y > canvas.height - 35 && breakoutBall.x > breakoutPadX && breakoutBall.x < breakoutPadX + 100) { breakoutBall.vy = -Math.abs(breakoutBall.vy); playSound('hit'); }
+if (breakoutBall.y > canvas.height) { handleGameOver('breakout', breakoutScore); return; }
+breakoutBricks.forEach(b => {
+if (b.active && breakoutBall.x > b.x && breakoutBall.x < b.x + b.w && breakoutBall.y > b.y && breakoutBall.y < b.y + b.h) {
+b.active = false; breakoutBall.vy *= -1; breakoutScore += 15; document.getElementById('activeScore').innerText = breakoutScore; playSound('eat');
+}
+});
+}
+function renderBreakout() {
+const canvas = document.getElementById('activeCanvas'); const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = '#ec4899'; breakoutBricks.forEach(b => { if (b.active) ctx.fillRect(b.x, b.y, b.w, b.h); });
+ctx.fillStyle = '#06b6d4'; ctx.fillRect(breakoutPadX, canvas.height - 25, 100, 14);
+ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(breakoutBall.x, breakoutBall.y, 8, 0, Math.PI * 2); ctx.fill();
+}
+
+/* INVADERS */
+let invShipX = 0, invLasers = [], invAliens = [], invScore = 0;
+function startInvaders() {
+stopCurrentGameLoop(); resizeCanvas(); const canvas = document.getElementById('activeCanvas');
+invShipX = canvas.width / 2; invLasers = []; invScore = 0; document.getElementById('activeScore').innerText = '0'; invAliens = [];
+for (let r = 0; r < 3; r++) { for (let c = 0; c < 7; c++) invAliens.push({ x: 50 + c * 50, y: 40 + r * 35, alive: true }); }
+let lastTime = performance.now();
+function loop(now) {
+const dt = (now - lastTime) / 1000; lastTime = now;
+updateInvaders(dt); renderInvaders();
+if (activeGameObj && activeGameObj.id === 'invaders') gameLoopId = requestAnimationFrame(loop);
+}
+gameLoopId = requestAnimationFrame(loop);
+}
+function fireInvaderLaser() { if (activeGameObj && activeGameObj.id === 'invaders') { const canvas = document.getElementById('activeCanvas'); invLasers.push({ x: invShipX, y: canvas.height - 40 }); playSound('shoot'); } }
+function updateInvaders(dt) {
+if (!dt) return; const canvas = document.getElementById('activeCanvas');
+if (keys['ArrowLeft'] || keys['a']) invShipX = Math.max(20, invShipX - 350 * dt);
+if (keys['ArrowRight'] || keys['d']) invShipX = Math.min(canvas.width - 20, invShipX + 350 * dt);
+for (let i = invLasers.length - 1; i >= 0; i--) {
+let l = invLasers[i]; l.y -= 500 * dt;
+invAliens.forEach(a => { if (a.alive && Math.abs(l.x - a.x) < 20 && Math.abs(l.y - a.y) < 15) { a.alive = false; invLasers.splice(i, 1); invScore += 25; document.getElementById('activeScore').innerText = invScore; playSound('hit'); } });
+if (l && l.y < 0) invLasers.splice(i, 1);
+}
+}
+function renderInvaders() {
+const canvas = document.getElementById('activeCanvas'); const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = '#10b981'; ctx.fillRect(invShipX - 15, canvas.height - 30, 30, 15);
+ctx.fillStyle = '#f59e0b'; invLasers.forEach(l => ctx.fillRect(l.x - 2, l.y, 4, 10));
+ctx.fillStyle = '#ec4899'; invAliens.forEach(a => { if (a.alive) ctx.fillRect(a.x - 15, a.y - 10, 30, 20); });
+}
+
+/* PONG 2 PLAYER */
+let pongP1 = 200, pongP2 = 200, pongBall = { x: 0, y: 0, vx: 0, vy: 0 }, p1Score = 0, p2Score = 0;
+function startPong() {
+stopCurrentGameLoop(); resizeCanvas(); const canvas = document.getElementById('activeCanvas');
+pongP1 = canvas.height / 2 - 40; pongP2 = canvas.height / 2 - 40;
+pongBall = { x: canvas.width / 2, y: canvas.height / 2, vx: 260, vy: 180 }; p1Score = 0; p2Score = 0;
+document.getElementById('activeScore').innerText = '0 - 0';
+let lastTime = performance.now();
+function loop(now) {
+const dt = (now - lastTime) / 1000; lastTime = now;
+updatePong(dt); renderPong();
+if (activeGameObj && activeGameObj.id === 'pong') gameLoopId = requestAnimationFrame(loop);
+}
+gameLoopId = requestAnimationFrame(loop);
+}
+function updatePong(dt) {
+if (!dt) return; const canvas = document.getElementById('activeCanvas');
+if (keys['w'] || keys['W']) pongP1 = Math.max(0, pongP1 - 400 * dt);
+if (keys['s'] || keys['S']) pongP1 = Math.min(canvas.height - 80, pongP1 + 400 * dt);
+if (keys['ArrowUp']) pongP2 = Math.max(0, pongP2 - 400 * dt);
+if (keys['ArrowDown']) pongP2 = Math.min(canvas.height - 80, pongP2 + 400 * dt);
+pongBall.x += pongBall.vx * dt; pongBall.y += pongBall.vy * dt;
+if (pongBall.y < 10 || pongBall.y > canvas.height - 10) pongBall.vy *= -1;
+if (pongBall.x < 30 && pongBall.y > pongP1 && pongBall.y < pongP1 + 80) { pongBall.vx = Math.abs(pongBall.vx) * 1.05; playSound('hit'); }
+if (pongBall.x > canvas.width - 30 && pongBall.y > pongP2 && pongBall.y < pongP2 + 80) { pongBall.vx = -Math.abs(pongBall.vx) * 1.05; playSound('hit'); }
+if (pongBall.x < 0) { p2Score++; resetPongBall(); } else if (pongBall.x > canvas.width) { p1Score++; resetPongBall(); }
+document.getElementById('activeScore').innerText = `${p1Score} - ${p2Score}`;
+}
+function resetPongBall() {
+const canvas = document.getElementById('activeCanvas');
+pongBall = { x: canvas.width / 2, y: canvas.height / 2, vx: (Math.random() > 0.5 ? 240 : -240), vy: 160 }; playSound('score');
+}
+function renderPong() {
+const canvas = document.getElementById('activeCanvas'); const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = '#06b6d4'; ctx.fillRect(15, pongP1, 12, 80);
+ctx.fillStyle = '#ec4899'; ctx.fillRect(canvas.width - 27, pongP2, 12, 80);
+ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(pongBall.x, pongBall.y, 8, 0, Math.PI * 2); ctx.fill();
+}
+
+/* MEMORY MATCH */
+let flippedCards = [], memScore = 0;
+function startMemory() {
+stopCurrentGameLoop(); const grid = document.getElementById('activeDomGrid'); grid.innerHTML = ''; memScore = 0;
+document.getElementById('activeScore').innerText = '0';
+const icons = ['fa-ghost', 'fa-bolt', 'fa-heart', 'fa-star', 'fa-crown', 'fa-gem', 'fa-fire', 'fa-rocket'];
+const deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
+grid.innerHTML = deck.map((icon, idx) => `
+<button onclick="flipCard(${idx}, '${icon}')" id="card-${idx}" class="bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-3xl text-purple-400 hover:border-purple-500 transition shadow-lg">
+<i class="fa-solid fa-question text-slate-600"></i>
+</button>
+`).join('');
+flippedCards = [];
+}
+function flipCard(idx, icon) {
+const btn = document.getElementById(`card-${idx}`);
+if (btn.disabled || flippedCards.length >= 2) return;
+btn.innerHTML = `<i class="fa-solid ${icon}"></i>`; btn.classList.add('bg-purple-900/40', 'border-purple-500'); playSound('click');
+flippedCards.push({ idx, icon, btn });
+if (flippedCards.length === 2) {
+if (flippedCards[0].icon === flippedCards[1].icon) {
+playSound('score'); flippedCards.forEach(c => c.btn.disabled = true); memScore += 20;
+document.getElementById('activeScore').innerText = memScore; flippedCards = [];
+} else {
+setTimeout(() => {
+flippedCards.forEach(c => { c.btn.innerHTML = `<i class="fa-solid fa-question text-slate-600"></i>`; c.btn.classList.remove('bg-purple-900/40', 'border-purple-500'); });
+flippedCards = [];
+}, 800);
+}
+}
+}
+
+/* STACKER */
+let stackBlocks = [], stackCurX = 0, stackCurW = 120, stackDir = 1, stackScore = 0;
+function startStacker() {
+stopCurrentGameLoop(); resizeCanvas(); stackBlocks = []; stackCurW = 120; stackCurX = 50; stackDir = 1; stackScore = 0;
+document.getElementById('activeScore').innerText = '0';
+let lastTime = performance.now();
+function loop(now) {
+const dt = (now - lastTime) / 1000; lastTime = now; updateStacker(dt); renderStacker();
+if (activeGameObj && activeGameObj.id === 'stacker') gameLoopId = requestAnimationFrame(loop);
+}
+gameLoopId = requestAnimationFrame(loop);
+}
+function dropStackBlock() {
+if (!activeGameObj || activeGameObj.id !== 'stacker') return;
+const canvas = document.getElementById('activeCanvas');
+if (stackBlocks.length > 0) {
+const prev = stackBlocks[stackBlocks.length - 1]; const diff = stackCurX - prev.x; stackCurW -= Math.abs(diff);
+if (stackCurW <= 0) { handleGameOver('stacker', stackScore); return; }
+if (diff < 0) stackCurX = prev.x;
+}
+stackBlocks.push({ x: stackCurX, y: canvas.height - (stackBlocks.length + 1) * 24, w: stackCurW });
+stackScore += 10; document.getElementById('activeScore').innerText = stackScore; playSound('stack');
+}
+function updateStacker(dt) {
+if (!dt) return; const canvas = document.getElementById('activeCanvas');
+stackCurX += stackDir * 280 * dt; if (stackCurX < 0 || stackCurX + stackCurW > canvas.width) stackDir *= -1;
+}
+function renderStacker() {
+const canvas = document.getElementById('activeCanvas'); const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = '#f59e0b'; stackBlocks.forEach(b => ctx.fillRect(b.x, b.y, b.w, 20));
+ctx.fillStyle = '#06b6d4'; ctx.fillRect(stackCurX, canvas.height - (stackBlocks.length + 1) * 24, stackCurW, 20);
+}
+
+/* ASTEROIDS */
+let astShip = { x: 0, y: 0, angle: 0, vx: 0, vy: 0, r: 12 }, astBullets = [], asteroidsList = [], astScore = 0;
+function startAsteroids() {
+stopCurrentGameLoop(); resizeCanvas(); const canvas = document.getElementById('activeCanvas');
+astScore = 0; document.getElementById('activeScore').innerText = '0';
+astShip = { x: canvas.width / 2, y: canvas.height / 2, angle: -Math.PI / 2, vx: 0, vy: 0, r: 12 };
+astBullets = []; asteroidsList = [];
+for (let i = 0; i < 5; i++) spawnAsteroid(canvas, 30);
+let lastTime = performance.now();
+function loop(now) {
+const dt = Math.min((now - lastTime) / 1000, 0.1); lastTime = now;
+updateAsteroids(dt); renderAsteroids();
+if (activeGameObj && activeGameObj.id === 'asteroids') gameLoopId = requestAnimationFrame(loop);
+}
+gameLoopId = requestAnimationFrame(loop);
+}
+function spawnAsteroid(canvas, radius, customX, customY) {
+let x = customX !== undefined ? customX : Math.random() * canvas.width;
+let y = customY !== undefined ? customY : Math.random() * canvas.height;
+const angle = Math.random() * Math.PI * 2, speed = Math.random() * 60 + 30;
+asteroidsList.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, r: radius });
+}
+function fireAsteroidLaser() {
+if (!activeGameObj || activeGameObj.id !== 'asteroids') return;
+astBullets.push({ x: astShip.x + Math.cos(astShip.angle) * astShip.r, y: astShip.y + Math.sin(astShip.angle) * astShip.r, vx: Math.cos(astShip.angle) * 450 + astShip.vx, vy: Math.sin(astShip.angle) * 450 + astShip.vy, life: 1.2 });
+playSound('shoot');
+}
+function updateAsteroids(dt) {
+const canvas = document.getElementById('activeCanvas'); if (!dt) return;
+if (keys['ArrowLeft'] || keys['a']) astShip.angle -= 4.2 * dt;
+if (keys['ArrowRight'] || keys['d']) astShip.angle += 4.2 * dt;
+if (keys['ArrowUp'] || keys['w']) { astShip.vx += Math.cos(astShip.angle) * 350 * dt; astShip.vy += Math.sin(astShip.angle) * 350 * dt; }
+astShip.vx *= 0.985; astShip.vy *= 0.985;
+astShip.x = (astShip.x + astShip.vx * dt + canvas.width) % canvas.width; astShip.y = (astShip.y + astShip.vy * dt + canvas.height) % canvas.height;
+for (let i = astBullets.length - 1; i >= 0; i--) {
+let b = astBullets[i]; b.x = (b.x + b.vx * dt + canvas.width) % canvas.width; b.y = (b.y + b.vy * dt + canvas.height) % canvas.height; b.life -= dt;
+for (let j = asteroidsList.length - 1; j >= 0; j--) {
+let a = asteroidsList[j];
+if (Math.hypot(b.x - a.x, b.y - a.y) < a.r) {
+playSound('hit'); astScore += 20; document.getElementById('activeScore').innerText = astScore;
+if (a.r > 15) { spawnAsteroid(canvas, a.r / 2, a.x, a.y); spawnAsteroid(canvas, a.r / 2, a.x, a.y); }
+asteroidsList.splice(j, 1); astBullets.splice(i, 1); break;
+}
+}
+if (b && b.life <= 0) astBullets.splice(i, 1);
+}
+for (let a of asteroidsList) {
+a.x = (a.x + a.vx * dt + canvas.width) % canvas.width; a.y = (a.y + a.vy * dt + canvas.height) % canvas.height;
+if (Math.hypot(astShip.x - a.x, astShip.y - a.y) < astShip.r + a.r * 0.8) { handleGameOver('asteroids', astScore); return; }
+}
+if (asteroidsList.length === 0) { for (let i = 0; i < 6; i++) spawnAsteroid(canvas, 30); }
+}
+function renderAsteroids() {
+const canvas = document.getElementById('activeCanvas'); const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.save(); ctx.translate(astShip.x, astShip.y); ctx.rotate(astShip.angle);
+ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 2; ctx.beginPath();
+ctx.moveTo(astShip.r, 0); ctx.lineTo(-astShip.r, -astShip.r / 1.5); ctx.lineTo(-astShip.r / 2, 0); ctx.lineTo(-astShip.r, astShip.r / 1.5); ctx.closePath(); ctx.stroke(); ctx.restore();
+ctx.fillStyle = '#f59e0b'; astBullets.forEach(b => { ctx.beginPath(); ctx.arc(b.x, b.y, 3, 0, Math.PI * 2); ctx.fill(); });
+ctx.strokeStyle = '#ec4899'; asteroidsList.forEach(a => { ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2); ctx.stroke(); });
+}
+
+/* HOPPER */
+let hopperPos = { row: 7, col: 3 }, hopperScore = 0, hopperObstacles = [];
+function startHopper() {
+stopCurrentGameLoop(); resizeCanvas(); hopperPos = { row: 7, col: 3 }; hopperScore = 0;
+document.getElementById('activeScore').innerText = '0'; hopperObstacles = [];
+for (let r = 1; r < 7; r++) {
+if (r === 4) continue;
+hopperObstacles.push({ row: r, speed: (Math.random() * 1.5 + 1.2) * (r % 2 === 0 ? 1 : -1), items: [{ col: Math.random() * 7 }, { col: (Math.random() * 7 + 3) % 7 }], color: r < 4 ? '#06b6d4' : '#f43f5e' });
+}
+let lastTime = performance.now();
+function loop(now) {
+const dt = (now - lastTime) / 1000; lastTime = now; updateHopper(dt); renderHopper();
+if (activeGameObj && activeGameObj.id === 'hopper') gameLoopId = requestAnimationFrame(loop);
+}
+gameLoopId = requestAnimationFrame(loop);
+}
+function moveHopper(dRow, dCol) {
+if (!activeGameObj || activeGameObj.id !== 'hopper') return;
+hopperPos.row = Math.max(0, Math.min(7, hopperPos.row + dRow)); hopperPos.col = Math.max(0, Math.min(6, hopperPos.col + dCol)); playSound('click');
+if (dRow < 0) { hopperScore += 10; document.getElementById('activeScore').innerText = hopperScore; }
+if (hopperPos.row === 0) { playSound('score'); hopperScore += 100; document.getElementById('activeScore').innerText = hopperScore; hopperPos = { row: 7, col: 3 }; }
+}
+function updateHopper(dt) {
+if (!dt) return;
+hopperObstacles.forEach(lane => {
+lane.items.forEach(item => {
+item.col += lane.speed * dt; if (item.col < -1) item.col = 7; if (item.col > 7) item.col = -1;
+if (lane.row === hopperPos.row && Math.abs(item.col - hopperPos.col) < 0.65) { handleGameOver('hopper', hopperScore); }
+});
+});
+}
+function renderHopper() {
+const canvas = document.getElementById('activeCanvas'); const ctx = canvas.getContext('2d');
+const cellW = canvas.width / 7, cellH = canvas.height / 8;
+ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = 'rgba(16, 185, 129, 0.15)'; ctx.fillRect(0, 7 * cellH, canvas.width, cellH); ctx.fillRect(0, 0, canvas.width, cellH); ctx.fillRect(0, 4 * cellH, canvas.width, cellH);
+hopperObstacles.forEach(lane => { ctx.fillStyle = lane.color; lane.items.forEach(item => ctx.fillRect(item.col * cellW + 4, lane.row * cellH + 6, cellW - 8, cellH - 12)); });
+ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc((hopperPos.col + 0.5) * cellW, (hopperPos.row + 0.5) * cellH, Math.min(cellW, cellH) / 3, 0, Math.PI * 2); ctx.fill();
+}
+
+/* TOUCH CONTROLS SETUP */
+function setupTouchControls(gameId) {
+const container = document.getElementById('activeTouchControls'); container.innerHTML = '';
+if (['snake', 'hopper', 'crossyroad', 'pacrunner'].includes(gameId)) {
+container.innerHTML = `
+<div class="grid grid-cols-3 gap-2 w-36">
+<div></div><button onclick="handleKeyPress({key:'ArrowUp'})" class="bg-slate-800 p-3 rounded-xl text-white font-bold">▲</button><div></div>
+<button onclick="handleKeyPress({key:'ArrowLeft'})" class="bg-slate-800 p-3 rounded-xl text-white font-bold">◄</button>
+<button onclick="handleKeyPress({key:'ArrowDown'})" class="bg-slate-800 p-3 rounded-xl text-white font-bold">▼</button>
+<button onclick="handleKeyPress({key:'ArrowRight'})" class="bg-slate-800 p-3 rounded-xl text-white font-bold">►</button>
+</div>
+`;
+}
+}
+
+window.onload = function() {
+renderCategories();
+renderGamesGrid();
+renderStaticAds();
+startInterstitialTimer();
+saveFavorites();
+};
+</script>
+</body>
+</html>
